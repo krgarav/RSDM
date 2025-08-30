@@ -7,6 +7,7 @@ import {
   deleteUserById,
   getAllUsers,
   getUserById,
+  savedPathFetch,
   updateUserById,
 } from "../helper/Urlhelper";
 import { useRef } from "react";
@@ -44,9 +45,10 @@ const Pathselector = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await getAllUsers();
-        if (Array.isArray(res)) {
-          setUsers(res);
+        const res = await savedPathFetch();
+        console.log(res.data);
+        if (Array.isArray(res.data)) {
+          setUsers(res.data);
         }
       } catch (error) {
         console.log(error);
@@ -188,10 +190,36 @@ const Pathselector = () => {
     >
       <td className="px-4 py-2">{index + 1}</td>
       <td className="px-4 py-2">{user.username}</td>
-      <td className="px-4 py-2">{user.email}</td>
-      <td className="px-4 py-2">{user.role}</td>
-      <td className="px-4 py-2">{user.isRestricted ? "Inactive" : "Active"}</td>
-      <td className="px-4 py-2">{formatDate(user.createdAt)}</td>
+      <td className="px-4 py-2">{user.path}</td>
+      {/* <td className="px-4 py-2">{user.path}</td> */}
+      <td className="px-4 py-2">
+        <span
+          className={`px-3 py-1 text-sm font-semibold rounded-full ${
+            user.active
+              ? "bg-green-100 text-green-700"
+              : "bg-orange-100 text-orange-700"
+          }`}
+        >
+          {user.active ? "Active" : "Inactive"}
+        </span>
+      </td>
+      {/* <td className="px-4 py-2">{formatDate(user.createdAt)}</td> */}
+      {/* ✅ Button Column */}
+      <td className="px-4 py-2">
+        <button
+          className={`${
+            user.active
+              ? "bg-red-500 hover:bg-red-600" // For active users → Deactivate button
+              : "bg-green-500 hover:bg-green-600" // For inactive users → Activate button
+          } text-white px-3 py-1 rounded`}
+          onClick={(e) => {
+            e.stopPropagation(); // ✅ Prevent triggering row click
+            // handleButtonAction(user);
+          }}
+        >
+          {user.active ? "Deactivate" : "Activate"}
+        </button>
+      </td>
     </tr>
   ));
   return (

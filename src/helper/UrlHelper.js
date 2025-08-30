@@ -222,12 +222,12 @@ export const savedPathFetch = async () => {
   const token = localStorage.getItem("upsctoken");
 
   try {
-    const response = await axios.get(`${URL}folders/list`, {
+    const response = await axios.get(`${URL}/folders/list`, {
       headers: {
-        token: `${token}`,
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
       },
     });
-    console.log(response);
+
     // Return both the data and headers in an object
     return response;
   } catch (error) {
