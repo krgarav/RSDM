@@ -187,9 +187,9 @@ const UserManagement = () => {
       }}
     >
       <td className="px-4 py-2">{index + 1}</td>
-      <td className="px-4 py-2">{user.username}</td>
+      <td className="px-4 py-2">{user.full_name}</td>
       <td className="px-4 py-2">{user.email}</td>
-      <td className="px-4 py-2">{user.role}</td>
+      <td className="px-4 py-2">{user.is_superuser?"Super User":"User"}</td>
       <td className="px-4 py-2">{user.isRestricted ? "Inactive" : "Active"}</td>
       <td className="px-4 py-2">{formatDate(user.createdAt)}</td>
     </tr>

@@ -31,7 +31,14 @@ function formatDate(dateString) {
   // Format the date into a human-readable string
   return date.toLocaleString("en-US", options);
 }
-const Pathselector = () => {
+
+function convertObjectToAlphabetArray(obj) {
+  const result = Object.keys(obj).map((key) => {
+    return { [key]: "alphabet" };
+  });
+  return result;
+}
+const ManageTable = () => {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "" });
@@ -40,6 +47,7 @@ const Pathselector = () => {
   const [currentUserDetail, setCurrentUserDetail] = useState(null);
   const [email, setEmail] = useState(null);
   const [userName, setUserName] = useState(null);
+  const [jsonData, setJsonData] = useState({});
   const emailRef = useRef();
   const passwordRef = useRef();
   const userNameRef = useRef();
@@ -134,51 +142,26 @@ const Pathselector = () => {
   };
   // Handle adding a new user
   const handleAddUser = async () => {
-    // setUsers([...users, newUser]);
+    const convertedJson = convertObjectToAlphabetArray(jsonData);
+    console.log(convertedJson);
 
-    // setNewUser({ name: "", email: "", password: "" }); // Reset the form
-    const email = emailRef.current.value;
-    const password = passwordRef.current.value;
-    const userName = userNameRef.current.value;
-    if (!userName) {
-      toast.warn("Username cannot be empty");
-      return;
-    }
+    // Convert JSON to string
+    const jsonString = JSON.stringify(convertedJson, null, 2);
 
-    if (!email) {
-      toast.warn("Email cannot be empty");
-      return;
-    } else if (!password) {
-      toast.warn("Password  cannot be empty");
-      return;
-    } else if (!userName) {
-      toast.warn("Username cannot be empty");
-    } else if (!role) {
-      console.log(role);
-      toast.warn("Select role for the user");
-    }
-    const obj = {
-      username: userName,
-      email: email,
-      password: password,
-      role: role,
-    };
+    // Create a Blob with JSON data
+    const blob = new Blob([jsonString], { type: "application/json" });
 
-    try {
-      const res = await createUser(obj);
-      console.log(res);
-      if (res?.isCreated) {
-        toast.success("User created successfully");
-        setIsModalOpen(false);
-      } else {
-        toast.error(res?.data.message);
-      }
+    // Create a temporary download link
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sample.json"; // File name
+    document.body.appendChild(a);
+    a.click();
 
-      console.log(res);
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to create user");
-    }
+    // Remove link after download
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleButtonAction = async (user) => {
@@ -232,19 +215,48 @@ const Pathselector = () => {
       </td>
     </tr>
   ));
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const jsonData = csvToJson(text);
+        console.log(jsonData); // You can store it in state if needed
+        setJsonData(jsonData[0]);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const csvToJson = (csv) => {
+    const lines = csv
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line);
+    const headers = lines[0].split(",");
+    return lines.slice(1).map((line) => {
+      const values = line.split(",");
+      return headers.reduce((obj, header, index) => {
+        obj[header.trim()] = values[index]?.trim();
+        return obj;
+      }, {});
+    });
+  };
   return (
     <>
       <Sidebar />
 
       <div className="p-4 sm:ml-64 mt-10  flex flex-col">
         <div className="flex justify-between items-center align-middle">
-          <h1 className="text-3xl font-semibold mb-4">Path Management</h1>
+          <h1 className="text-3xl font-semibold mb-4">Table Manager</h1>
           {/* Create User Button */}
           <button
             onClick={() => setIsModalOpen(true)}
             className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
-            Add Path
+            Create Table
           </button>
         </div>
 
@@ -292,33 +304,26 @@ const Pathselector = () => {
         {isModalOpen && (
           <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-xl font-semibold mb-4">Select Path</h2>
+              <h2 className="text-xl font-semibold mb-4">Select CSV</h2>
               <div className="mb-4">
                 <label className="block text-sm font-bold mb-2" htmlFor="name">
-                  Scanner Name
+                  Name
                 </label>
                 <input
-                  type="text"
+                  type="file"
                   id="name"
                   name="name"
                   ref={userNameRef}
+                  accept=".csv"
+                  onChange={handleFileChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter Username"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="email">
-                  Scanner Path
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  ref={emailRef}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter the path of scanner"
-                />
-              </div>
+
+
+
+              
 
               <div className="flex justify-between">
                 <button
@@ -331,7 +336,7 @@ const Pathselector = () => {
                   onClick={handleAddUser}
                   className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-                  Add Path
+                  Assign Data Type
                 </button>
               </div>
             </div>
@@ -466,4 +471,4 @@ const Pathselector = () => {
   );
 };
 
-export default Pathselector;
+export default ManageTable;

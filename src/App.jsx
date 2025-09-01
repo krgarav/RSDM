@@ -15,6 +15,7 @@ import UserManagement from "./Pages/UserManagement";
 import Pathselector from "./Pages/Pathselector";
 import Entryfinder from "./Pages/Entryfinder";
 import { savedPathFetch } from "./helper/Urlhelper";
+import ManageTable from "./Pages/ManageTable";
 
 const useTokenRedirect = () => {
   const navigate = useNavigate();
@@ -88,6 +89,8 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/operator/upload" element={<Upload />} />
         <Route path="/admin/usermanagement" element={<UserManagement />} />
+        <Route path="/admin/managetable" element={<ManageTable />} />
+
         <Route path="/admin/pathmanagement" element={<Pathselector />} />
         <Route path="/admin/entryfinder" element={<Entryfinder />} />
         {/* Catch-all route for invalid paths */}
