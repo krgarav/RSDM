@@ -51,7 +51,7 @@ const Login = () => {
         // } else {
         //   navigate("/operator/upload", { replace: true });
         // }
-        //  navigate("/admin/dashboard", { replace: true });
+         navigate("/admin/dashboard", { replace: true });
 
         toast.success(res?.data?.message);
       }

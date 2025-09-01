@@ -239,3 +239,31 @@ export const savedPathFetch = async () => {
     };
   }
 };
+
+export const deactivePath = async (folder_id) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.post(
+      `${URL}/folders/${folder_id}/deactivate`,
+      {
+        folder_id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};

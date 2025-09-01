@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import {
   createUser,
+  deactivePath,
   deleteUserById,
   getAllUsers,
   getUserById,
@@ -180,6 +181,15 @@ const Pathselector = () => {
     }
   };
 
+  const handleButtonAction = async (user) => {
+    try {
+      const res = await deactivePath(user.id);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+    // console.log(user.active);
+  };
   const AllUsers = users.map((user, index) => (
     <tr
       key={index}
@@ -203,7 +213,7 @@ const Pathselector = () => {
           {user.active ? "Active" : "Inactive"}
         </span>
       </td>
-      {/* <td className="px-4 py-2">{formatDate(user.createdAt)}</td> */}
+      <td className="px-4 py-2">Table_name</td>
       {/* ✅ Button Column */}
       <td className="px-4 py-2">
         <button
@@ -214,7 +224,7 @@ const Pathselector = () => {
           } text-white px-3 py-1 rounded`}
           onClick={(e) => {
             e.stopPropagation(); // ✅ Prevent triggering row click
-            // handleButtonAction(user);
+            handleButtonAction(user);
           }}
         >
           {user.active ? "Deactivate" : "Activate"}
@@ -250,11 +260,14 @@ const Pathselector = () => {
                   Scanner ID
                 </th>
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Path
+                  Scanner ID
                 </th>
 
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   Status
+                </th>
+                <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
+                  Table
                 </th>
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   Action
