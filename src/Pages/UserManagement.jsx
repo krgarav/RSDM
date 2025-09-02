@@ -154,11 +154,12 @@ const UserManagement = () => {
       console.log(role);
       toast.warn("Select role for the user");
     }
+
     const obj = {
-      username: userName,
+      full_name: userName,
       email: email,
       password: password,
-      role: role,
+      is_superuser: role,
     };
 
     try {
@@ -189,7 +190,7 @@ const UserManagement = () => {
       <td className="px-4 py-2">{index + 1}</td>
       <td className="px-4 py-2">{user.full_name}</td>
       <td className="px-4 py-2">{user.email}</td>
-      <td className="px-4 py-2">{user.is_superuser?"Super User":"User"}</td>
+      <td className="px-4 py-2">{user.is_superuser ? "Super User" : "User"}</td>
       <td className="px-4 py-2">{user.isRestricted ? "Inactive" : "Active"}</td>
       <td className="px-4 py-2">{formatDate(user.createdAt)}</td>
     </tr>
@@ -246,7 +247,7 @@ const UserManagement = () => {
               <h2 className="text-xl font-semibold mb-4">Create User</h2>
               <div className="mb-4">
                 <label className="block text-sm font-bold mb-2" htmlFor="name">
-                  User Name
+                  Full Name
                 </label>
                 <input
                   type="text"
@@ -254,7 +255,7 @@ const UserManagement = () => {
                   name="name"
                   ref={userNameRef}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter Username"
+                  placeholder="Enter full name"
                 />
               </div>
               <div className="mb-4">
@@ -288,7 +289,7 @@ const UserManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-bold mb-2" htmlFor="role">
-                  Role
+                  Super User
                 </label>
                 <div className="relative">
                   <select
@@ -304,8 +305,8 @@ const UserManagement = () => {
                     <option value="" disabled>
                       Select Role
                     </option>
-                    <option value="operator">Operator</option>
-                    <option value="admin">Admin</option>
+                    <option value="true">True</option>
+                    <option value="false">false</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <svg

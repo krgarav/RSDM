@@ -225,7 +225,7 @@ const Dashboard = () => {
     <>
       <Sidebar />
 
-      <div className="p-4 sm:ml-64  mt-10">
+      <div className="p-4 sm:ml-64  mt-10 ">
         <h1 className="text-3xl font-semibold mb-4">Dashboard</h1>
 
         {/* Stats */}
@@ -336,8 +336,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <p className="text-center text-gray-500 text-xs">
-          &copy;IOS.All rights reserved.
+        <p className="fixed bottom-0 left-0 w-full text-center text-gray-500 text-xs py-2 bg-white shadow-md">
+          &copy; IOS. All rights reserved.
         </p>
       </div>
     </>

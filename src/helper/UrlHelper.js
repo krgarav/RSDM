@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import qs from "qs";
+
+// https://txcfswqz-8000.inc1.devtunnels.ms/docs
 const URL = "http://192.168.1.39:8000";
 export const login = async (body) => {
   try {
@@ -42,12 +44,11 @@ export const createUser = async (body) => {
 
   try {
     const response = await axios.post(
-      `${URL}/api/users/create`,
+      `${URL}/auth/register`,
       { ...body },
-
       {
         headers: {
-          token: `${token}`,
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
         },
       }
     );
@@ -322,6 +323,58 @@ export const deleteTable = async (tableName) => {
         Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
       },
     });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};
+
+export const addNewPath = async (body) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.post(`${URL}/folders/add`, body, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};
+
+
+
+export const activatePath = async (folder_id) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.post(
+      `${URL}/folders/${folder_id}/activate`,
+      {
+        folder_id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
 
     // Return both the data and headers in an object
     return response;

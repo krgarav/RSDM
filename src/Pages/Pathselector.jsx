@@ -3,9 +3,12 @@ import Sidebar from "../component/sidebar";
 import { useState } from "react";
 import { useEffect } from "react";
 import {
+  activatePath,
+  addNewPath,
   createUser,
   deactivePath,
   deleteUserById,
+  fetchTables,
   getAllUsers,
   getUserById,
   savedPathFetch,
@@ -14,6 +17,7 @@ import {
 import { useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { createPath } from "react-router-dom";
 function formatDate(dateString) {
   const date = new Date(dateString);
 
@@ -40,9 +44,16 @@ const Pathselector = () => {
   const [currentUserDetail, setCurrentUserDetail] = useState(null);
   const [email, setEmail] = useState(null);
   const [userName, setUserName] = useState(null);
+  const [allTableOptions, setAllTableOptions] = useState([]);
+
   const emailRef = useRef();
   const passwordRef = useRef();
   const userNameRef = useRef();
+
+  const scannerNameRef = useRef();
+  const scannerPathRef = useRef();
+  const tableNameRef = useRef();
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -58,15 +69,39 @@ const Pathselector = () => {
     fetchUsers();
   }, [isModalOpen, profileModal]);
 
+  const fetchAllTables = async () => {
+    try {
+      const res = await fetchTables();
+      if (Array.isArray(res.data.tables)) {
+        setAllTableOptions(res.data.tables);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllTables();
+  }, []);
   useEffect(() => {
     if (currentUserDetail) {
       setProfileModal(true);
       console.log(emailRef);
-      //   emailRef.current.value = currentUserDetail.email;
-      //   passwordRef.current.value = currentUserDetail.password;
-      //   userNameRef.current.value = currentUserDetail.username;
     }
   }, [currentUserDetail]);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetchTables();
+      if (Array.isArray(res.data.tables)) {
+        setUsers(res.data.tables);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {}, []);
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -134,62 +169,78 @@ const Pathselector = () => {
   };
   // Handle adding a new user
   const handleAddUser = async () => {
-    // setUsers([...users, newUser]);
+    const scannerName = scannerNameRef.current.value;
+    const scannerPath = scannerPathRef.current.value;
+    const tableName = tableNameRef.current.value;
 
-    // setNewUser({ name: "", email: "", password: "" }); // Reset the form
-    const email = emailRef.current.value;
-    const password = passwordRef.current.value;
-    const userName = userNameRef.current.value;
-    if (!userName) {
-      toast.warn("Username cannot be empty");
+    // Validation
+    if (!scannerName.trim()) {
+      toast.warn("Scanner Name cannot be empty");
       return;
     }
-
-    if (!email) {
-      toast.warn("Email cannot be empty");
+    if (!scannerPath.trim()) {
+      toast.warn("Scanner Path cannot be empty");
       return;
-    } else if (!password) {
-      toast.warn("Password  cannot be empty");
+    }
+    if (!tableName.trim()) {
+      toast.warn("Table Name cannot be empty");
       return;
-    } else if (!userName) {
-      toast.warn("Username cannot be empty");
-    } else if (!role) {
-      console.log(role);
-      toast.warn("Select role for the user");
+    }
+    if (!scannerPath.includes(":")) {
+      toast.warn("Invalid path! Please include ':' in the path.");
+      return;
     }
     const obj = {
-      username: userName,
-      email: email,
-      password: password,
-      role: role,
+      path: scannerPath,
+      scanner_id: scannerName,
+      table_name: tableName,
     };
-
+    console.log(obj);
+    // return;
     try {
-      const res = await createUser(obj);
+      const res = await addNewPath(obj);
       console.log(res);
-      if (res?.isCreated) {
-        toast.success("User created successfully");
+
+      if (res?.status === 200) {
+        toast.success("Path added successfully");
         setIsModalOpen(false);
       } else {
-        toast.error(res?.data.message);
+        toast.error(res?.data?.message || "Failed to add path");
       }
-
-      console.log(res);
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to create user");
+      console.error(error);
+      toast.error("Failed to create path");
     }
   };
 
   const handleButtonAction = async (user) => {
     try {
-      const res = await deactivePath(user.id);
-      console.log(res);
+      let res;
+      if (user.active) {
+        res = await deactivePath(user.id);
+        console.log(res);
+        if (res?.status === 200) {
+          toast.success("Path deactivated successfully");
+        } else {
+          toast.error(res?.message || "Failed to deactivate path");
+        }
+      } else {
+        res = await activatePath(user.id);
+        if (res?.status === 200) {
+          toast.success("Path activated successfully");
+        } else {
+          toast.error(res?.message || "Failed to activate path");
+        }
+      }
+
+      // Update UI (either refetch or update state manually)
+      await fetchAllTables(); // or update state if you have paths in local state
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("An error occurred while updating the path status");
     }
-    // console.log(user.active);
   };
+
   const AllUsers = users.map((user, index) => (
     <tr
       key={index}
@@ -232,6 +283,13 @@ const Pathselector = () => {
       </td>
     </tr>
   ));
+  const AllOptions = allTableOptions.map((item, index) => {
+    return (
+      <option key={index} value={item}>
+        {item}
+      </option>
+    );
+  });
   return (
     <>
       <Sidebar />
@@ -301,7 +359,7 @@ const Pathselector = () => {
                   type="text"
                   id="name"
                   name="name"
-                  ref={userNameRef}
+                  ref={scannerNameRef}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter Scanner Name"
                 />
@@ -314,7 +372,7 @@ const Pathselector = () => {
                   type="email"
                   id="email"
                   name="email"
-                  ref={emailRef}
+                  ref={scannerPathRef}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="Enter the path of scanner"
                 />
@@ -330,14 +388,11 @@ const Pathselector = () => {
                 <select
                   id="dbTable"
                   name="dbTable"
-                  ref={emailRef} // you can rename this to dbTableRef for clarity
+                  ref={tableNameRef} // you can rename this to dbTableRef for clarity
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
                   <option value="">---Select DB Table---</option>
-                  <option value="users">Users</option>
-                  <option value="orders">Orders</option>
-                  <option value="products">Products</option>
-                  <option value="transactions">Transactions</option>
+                  {AllOptions}
                 </select>
               </div>
               <div className="flex justify-between">
