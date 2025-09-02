@@ -54,19 +54,19 @@ const Pathselector = () => {
   const scannerPathRef = useRef();
   const tableNameRef = useRef();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await savedPathFetch();
-        console.log(res.data);
-        if (Array.isArray(res.data)) {
-          setUsers(res.data);
-        }
-      } catch (error) {
-        console.log(error);
+  const fetchallUsers = async () => {
+    try {
+      const res = await savedPathFetch();
+      console.log(res.data);
+      if (Array.isArray(res.data)) {
+        setUsers(res.data);
       }
-    };
-    fetchUsers();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchallUsers();
   }, [isModalOpen, profileModal]);
 
   const fetchAllTables = async () => {
@@ -234,7 +234,7 @@ const Pathselector = () => {
       }
 
       // Update UI (either refetch or update state manually)
-      await fetchAllTables(); // or update state if you have paths in local state
+      await fetchallUsers(); // or update state if you have paths in local state
     } catch (error) {
       console.error(error);
       toast.error("An error occurred while updating the path status");
