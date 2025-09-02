@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import qs from "qs";
-const URL = "https://txcfswqz-8000.inc1.devtunnels.ms";
+const URL = "http://192.168.1.39:8000";
 export const login = async (body) => {
   try {
     const response = await axios.post(
@@ -255,6 +255,73 @@ export const deactivePath = async (folder_id) => {
         },
       }
     );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};
+
+export const createTable = async (body) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.post(`${URL}/tables/create`, body, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};
+
+export const fetchTables = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/tables/all`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    return {
+      data: error.response ? error.response.data : null,
+      headers: error.response ? error.response.headers : null,
+    };
+  }
+};
+
+export const deleteTable = async (tableName) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.delete(`${URL}/tables/delete/${tableName}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
 
     // Return both the data and headers in an object
     return response;

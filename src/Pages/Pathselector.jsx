@@ -303,7 +303,7 @@ const Pathselector = () => {
                   name="name"
                   ref={userNameRef}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="Enter Username"
+                  placeholder="Enter Scanner Name"
                 />
               </div>
               <div className="mb-4">
@@ -320,6 +320,26 @@ const Pathselector = () => {
                 />
               </div>
 
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-bold mb-2"
+                  htmlFor="dbTable"
+                >
+                  DB Table
+                </label>
+                <select
+                  id="dbTable"
+                  name="dbTable"
+                  ref={emailRef} // you can rename this to dbTableRef for clarity
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                  <option value="">---Select DB Table---</option>
+                  <option value="users">Users</option>
+                  <option value="orders">Orders</option>
+                  <option value="products">Products</option>
+                  <option value="transactions">Transactions</option>
+                </select>
+              </div>
               <div className="flex justify-between">
                 <button
                   onClick={() => setIsModalOpen(false)}

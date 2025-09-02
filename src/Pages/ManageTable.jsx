@@ -3,9 +3,12 @@ import Sidebar from "../component/sidebar";
 import { useState } from "react";
 import { useEffect } from "react";
 import {
+  createTable,
   createUser,
   deactivePath,
+  deleteTable,
   deleteUserById,
+  fetchTables,
   getAllUsers,
   getUserById,
   savedPathFetch,
@@ -47,22 +50,22 @@ const ManageTable = () => {
   const [currentUserDetail, setCurrentUserDetail] = useState(null);
   const [email, setEmail] = useState(null);
   const [userName, setUserName] = useState(null);
-  const [jsonData, setJsonData] = useState({});
+  const [jsonData, setJsonData] = useState([]);
+  const [tableName, setTableName] = useState(null);
   const emailRef = useRef();
   const passwordRef = useRef();
   const userNameRef = useRef();
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await savedPathFetch();
-        console.log(res.data);
-        if (Array.isArray(res.data)) {
-          setUsers(res.data);
-        }
-      } catch (error) {
-        console.log(error);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetchTables();
+      if (Array.isArray(res.data.tables)) {
+        setUsers(res.data.tables);
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
     fetchUsers();
   }, [isModalOpen, profileModal]);
 
@@ -70,9 +73,6 @@ const ManageTable = () => {
     if (currentUserDetail) {
       setProfileModal(true);
       console.log(emailRef);
-      //   emailRef.current.value = currentUserDetail.email;
-      //   passwordRef.current.value = currentUserDetail.password;
-      //   userNameRef.current.value = currentUserDetail.username;
     }
   }, [currentUserDetail]);
   // Handle form input changes
@@ -140,39 +140,61 @@ const ManageTable = () => {
       console.log(error);
     }
   };
-  // Handle adding a new user
   const handleAddUser = async () => {
-    const convertedJson = convertObjectToAlphabetArray(jsonData);
-    console.log(convertedJson);
+    try {
+      if (!tableName) {
+        toast.error("Please enter a table name");
+        return;
+      }
+      if (jsonData.length === 0) {
+        toast.error("Please select CSV file");
+        return;
+      }
+      // Prepare object
+      const obj = {
+        table_name: tableName,
+        table_schema: jsonData,
+      };
 
-    // Convert JSON to string
-    const jsonString = JSON.stringify(convertedJson, null, 2);
+      // Show loading toast (optional)
+      const loadingToast = toast.loading("Creating table...");
 
-    // Create a Blob with JSON data
-    const blob = new Blob([jsonString], { type: "application/json" });
+      // Call API
+      const res = await createTable(obj);
 
-    // Create a temporary download link
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sample.json"; // File name
-    document.body.appendChild(a);
-    a.click();
-
-    // Remove link after download
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // Check response and show success
+      if (res?.data?.success) {
+        toast.dismiss(loadingToast);
+        toast.success("Table created successfully!");
+        setIsModalOpen(false);
+        setTableName(null);
+        setJsonData([]);
+      } else {
+        toast.dismiss(loadingToast);
+        toast.error(res?.message || "Failed to create table");
+      }
+    } catch (error) {
+      toast.dismiss();
+      toast.error("An error occurred while creating the table");
+      console.error(error);
+    }
   };
 
   const handleButtonAction = async (user) => {
     try {
-      const res = await deactivePath(user.id);
-      console.log(res);
+      const confirmed = window.confirm(
+        "Are you sure you want to delete the table?"
+      );
+      if (!confirmed) return; // Exit if user cancels
+
+      const res = await deleteTable(user);
+      fetchUsers();
+      console.log("Table deleted:", user);
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting table:", error);
     }
-    // console.log(user.active);
   };
+
   const AllUsers = users.map((user, index) => (
     <tr
       key={index}
@@ -182,35 +204,21 @@ const ManageTable = () => {
       }}
     >
       <td className="px-4 py-2">{index + 1}</td>
-      <td className="px-4 py-2">{user.username}</td>
-      <td className="px-4 py-2">{user.path}</td>
-      {/* <td className="px-4 py-2">{user.path}</td> */}
-      <td className="px-4 py-2">
-        <span
-          className={`px-3 py-1 text-sm font-semibold rounded-full ${
-            user.active
-              ? "bg-green-100 text-green-700"
-              : "bg-orange-100 text-orange-700"
-          }`}
-        >
-          {user.active ? "Active" : "Inactive"}
-        </span>
-      </td>
-      <td className="px-4 py-2">Table_name</td>
+      <td className="px-4 py-2">{user}</td>
+
       {/* ✅ Button Column */}
       <td className="px-4 py-2">
         <button
           className={`${
-            user.active
-              ? "bg-red-500 hover:bg-red-600" // For active users → Deactivate button
-              : "bg-green-500 hover:bg-green-600" // For inactive users → Activate button
+            "bg-red-500 hover:bg-red-600" // For active users → Deactivate button
+            // For inactive users → Activate button
           } text-white px-3 py-1 rounded`}
           onClick={(e) => {
             e.stopPropagation(); // ✅ Prevent triggering row click
             handleButtonAction(user);
           }}
         >
-          {user.active ? "Deactivate" : "Activate"}
+          Delete
         </button>
       </td>
     </tr>
@@ -224,12 +232,11 @@ const ManageTable = () => {
         const text = e.target.result;
         const jsonData = csvToJson(text);
         console.log(jsonData); // You can store it in state if needed
-        setJsonData(jsonData[0]);
+        setJsonData(convertObjectToAlphabetArray(jsonData[0]));
       };
       reader.readAsText(file);
     }
   };
-
   const csvToJson = (csv) => {
     const lines = csv
       .split("\n")
@@ -268,18 +275,9 @@ const ManageTable = () => {
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   Sr No.
                 </th>
-                <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Scanner ID
-                </th>
-                <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Path
-                </th>
 
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Status
-                </th>
-                <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Table
+                  Table Name
                 </th>
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   Action
@@ -307,7 +305,23 @@ const ManageTable = () => {
               <h2 className="text-xl font-semibold mb-4">Select CSV</h2>
               <div className="mb-4">
                 <label className="block text-sm font-bold mb-2" htmlFor="name">
-                  Name
+                  Table Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  onChange={(e) => setTableName(e.target.value)}
+                  value={tableName}
+                  ref={userNameRef}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Enter Table Name"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-bold mb-2" htmlFor="name">
+                  Sample Csv
                 </label>
                 <input
                   type="file"
@@ -321,9 +335,54 @@ const ManageTable = () => {
                 />
               </div>
 
+              {/* JSON Data Display */}
+              {jsonData && jsonData.length > 0 && (
+                <div className="border rounded p-4 bg-gray-100 max-h-60 overflow-y-auto mb-4">
+                  {jsonData.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center mb-2 border-b pb-2"
+                    >
+                      <div className="bg-gray-200 p-2 rounded w-1/2 text-sm font-medium">
+                        {Object.keys(item).map((key) => (
+                          <div key={key} className="mb-1">
+                            {key}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-white p-2 rounded w-1/2 text-sm">
+                        {Object.keys(item).map((key) => (
+                          <div
+                            key={key}
+                            className="flex justify-between items-center mb-1"
+                          >
+                            <select
+                              className="border rounded p-1 text-xs"
+                              value={item[key]} // bind the value
+                              onChange={(e) => {
+                                const newValue = e.target.value;
+                                setJsonData((prev) => {
+                                  const updated = [...prev];
+                                  updated[index] = {
+                                    ...updated[index],
+                                    [key]: newValue,
+                                  };
+                                  return updated;
+                                });
+                              }}
+                            >
+                              <option value="alphabet">Alphabet</option>
+                              <option value="integer">Integer</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-
-              
+              {/* Buttons */}
 
               <div className="flex justify-between">
                 <button
@@ -336,7 +395,7 @@ const ManageTable = () => {
                   onClick={handleAddUser}
                   className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-                  Assign Data Type
+                  Create Table
                 </button>
               </div>
             </div>
