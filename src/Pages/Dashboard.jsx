@@ -5,6 +5,8 @@ import {
   getAllData,
   getUserAnalytics,
 } from "../helper/Urlhelper";
+import { FaFileCsv, FaFilePdf, FaUsers, FaUserCheck, FaFileAlt } from "react-icons/fa";
+import { MdAnalytics } from "react-icons/md";
 function formatDate(dateString) {
   const date = new Date(dateString);
 
@@ -225,32 +227,43 @@ const Dashboard = () => {
     <>
       <Sidebar />
 
-      <div className="p-4 sm:ml-64  mt-10 ">
-        <h1 className="text-3xl font-semibold mb-4">Dashboard</h1>
+      <div className="p-6 sm:ml-64 mt-12">
+        <h1 className="text-4xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+          <MdAnalytics className="text-blue-600" /> Dashboard
+        </h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-6 my-6">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">Today's Total Scanned </h2>
-            <p className="text-2xl font-bold text-blue-600">
+       {/* Analytics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+            <h2 className="text-lg font-semibold text-gray-600 flex items-center gap-2">
+              <FaFileAlt className="text-blue-500" /> Today's Total Scanned
+            </h2>
+            <p className="text-3xl font-bold text-blue-600 mt-2">
               {analyticDetails.uploadedFiles}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">Total File Scanned</h2>
-            <p className="text-2xl font-bold text-blue-600">
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+            <h2 className="text-lg font-semibold text-gray-600 flex items-center gap-2">
+              <FaFileAlt className="text-indigo-500" /> Total File Scanned
+            </h2>
+            <p className="text-3xl font-bold text-indigo-600 mt-2">
               {analyticDetails.uploadedFiles}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">All Users</h2>
-            <p className="text-2xl font-bold text-green-600">
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+            <h2 className="text-lg font-semibold text-gray-600 flex items-center gap-2">
+              <FaUsers className="text-green-500" /> All Users
+            </h2>
+            <p className="text-3xl font-bold text-green-600 mt-2">
               {analyticDetails.users}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">Active Users</h2>
-            <p className="text-2xl font-bold text-purple-600">
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+            <h2 className="text-lg font-semibold text-gray-600 flex items-center gap-2">
+              <FaUserCheck className="text-purple-500" /> Active Users
+            </h2>
+            <p className="text-3xl font-bold text-purple-600 mt-2">
               {analyticDetails.activeUsers}
             </p>
           </div>

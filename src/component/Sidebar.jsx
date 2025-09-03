@@ -52,18 +52,20 @@ const Sidebar = (element) => {
       document.body.classList.remove("dark");
     }
   }, [isDarkMode]);
-  // useEffect(() => {
-  //   const token = localStorage.getItem("upsctoken");
-  //   if (token) {
-  //     try {
-  //       const decoded = jwtDecode(token);
-  //       setUser(decoded);
-  //       setRole(decoded.user.role);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  // }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("upsctoken");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+        // setRole(decoded.user.role);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }, []);
+
+  console.log(user)
 
   return (
     <>
@@ -139,7 +141,8 @@ const Sidebar = (element) => {
                         className="text-sm text-gray-900 dark:text-white"
                         role="none"
                       >
-                        {user?.user?.username} ({user?.user?.role})
+                        {user?.sub} 
+                        {/* ({user?.user?.role}) */}
                       </p>
                       <p
                         className="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
