@@ -192,7 +192,7 @@ const UserManagement = () => {
       <td className="px-4 py-2">{user.email}</td>
       <td className="px-4 py-2">{user.is_superuser ? "Super User" : "User"}</td>
       <td className="px-4 py-2">{user.isRestricted ? "Inactive" : "Active"}</td>
-      <td className="px-4 py-2">{formatDate(user.createdAt)}</td>
+      {/* <td className="px-4 py-2">{formatDate(user.createdAt)}</td> */}
     </tr>
   ));
   return (
@@ -217,7 +217,7 @@ const UserManagement = () => {
             <thead className="bg-gray-200">
               <tr>
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Sl No.
+                  Sr No.
                 </th>
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   User Name
@@ -231,9 +231,7 @@ const UserManagement = () => {
                 <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                   Status
                 </th>
-                <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                  Created At
-                </th>
+               
               </tr>
             </thead>
             <tbody>{AllUsers}</tbody>
