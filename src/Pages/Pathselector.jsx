@@ -250,7 +250,7 @@ const Pathselector = () => {
       }}
     >
       <td className="px-4 py-2">{index + 1}</td>
-      <td className="px-4 py-2">{user.username}</td>
+      <td className="px-4 py-2">{user.scanner_id}</td>
       <td className="px-4 py-2">{user.path}</td>
       {/* <td className="px-4 py-2">{user.path}</td> */}
       <td className="px-4 py-2">
@@ -264,7 +264,7 @@ const Pathselector = () => {
           {user.active ? "Active" : "Inactive"}
         </span>
       </td>
-      <td className="px-4 py-2">Table_name</td>
+      <td className="px-4 py-2">{user.table_name}</td>
       {/* ✅ Button Column */}
       <td className="px-4 py-2">
         <button
@@ -278,7 +278,7 @@ const Pathselector = () => {
             handleButtonAction(user);
           }}
         >
-          {user.active ? "Deactivate" : "Activate"}
+          {user.active ? "Finish" : "Activate"}
         </button>
       </td>
     </tr>
@@ -533,9 +533,9 @@ const Pathselector = () => {
           </div>
         )}
         <ToastContainer />
-        <p className="text-center bottom-2 text-gray-500 text-xs">
+        {/* <p className="text-center bottom-2 text-gray-500 text-xs">
           &copy;IOS.All rights reserved.
-        </p>
+        </p> */}
       </div>
     </>
   );

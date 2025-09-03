@@ -522,9 +522,9 @@ const ManageTable = () => {
           </div>
         )}
         <ToastContainer />
-        <p className="text-center bottom-2 text-gray-500 text-xs">
+        {/* <p className="text-center bottom-2 text-gray-500 text-xs">
           &copy;IOS.All rights reserved.
-        </p>
+        </p> */}
       </div>
     </>
   );
