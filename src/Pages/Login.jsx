@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 const Login = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword,setShowPassword] = useState(false);
   const emailRef = useRef();
   const passwordRef = useRef();
   const navigate = useNavigate();
@@ -53,10 +54,10 @@ const Login = () => {
         // }
          navigate("/admin/dashboard", { replace: true });
 
-        toast.success(res?.data?.message);
+        toast.success(res?.data?.detail);
       }
 
-      toast.error(res?.data?.message);
+      toast.error(res?.data?.detail);
     } catch (error) {
       toast.error("Something went wrong!");
     } finally {
@@ -112,7 +113,7 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword?"text":"password"}
                   name="password"
                   id="password"
                   placeholder="••••••••"
@@ -129,6 +130,7 @@ const Login = () => {
                       aria-describedby="remember"
                       type="checkbox"
                       className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
+                      onChange={()=>{setShowPassword(prev=>!prev)}}
                       // required
                     />
                   </div>
@@ -136,6 +138,7 @@ const Login = () => {
                     <label
                       htmlFor="remember"
                       className="text-gray-500 dark:text-gray-300"
+
                     >
                       show password
                     </label>

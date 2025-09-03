@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import qs from "qs";
 
 // https://txcfswqz-8000.inc1.devtunnels.ms/docs
-const URL = "http://192.168.1.15:8000";
+const URL = "http://192.168.1.24:8000";
 export const login = async (body) => {
   try {
     const response = await axios.post(
