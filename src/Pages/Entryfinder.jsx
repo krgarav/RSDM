@@ -1,37 +1,79 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { fetchTables, searchRecord } from "../helper/Urlhelper";
 // import { getEntryBySearch } from "../helper/Urlhelper"; // <-- API for search
-
+import { ImageViewer, FullScreenViewer } from "react-iv-viewer";
+import "react-iv-viewer/dist/react-iv-viewer.css";
 const Entryfinder = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [tableOptions, setTableOptions] = useState([]);
+  const [headers, setHeaders] = useState([]);
+  const [base64String, setBase64String] = useState(null);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetchTables();
+      if (Array.isArray(res.data.tables)) {
+        setTableOptions(res.data.tables);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  console.log(tableOptions);
 
   const handleSearch = async () => {
-    // if (!searchTerm.trim()) {
-    //   toast.warn("Please enter a search term");
-    //   return;
-    // }
+    if (!searchTerm.trim()) {
+      toast.warn("Please enter a search term");
+      return;
+    }
+    if (!selectedTable) {
+      toast.warn("Please select table ");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await searchRecord(selectedTable, searchTerm); // API call
+      console.log(res);
 
-    // setLoading(true);
-    // try {
-    //   const res = await getEntryBySearch(searchTerm); // API call
-    //   if (Array.isArray(res) && res.length > 0) {
-    //     setSearchResults(res);
-    //   } else {
-    //     setSearchResults([]);
-    //     toast.info("No results found");
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    //   toast.error("Error fetching search results");
-    // } finally {
-    //   setLoading(false);
-    // }
+      if (res?.data?.success) {
+        setSearchResults(Object.values(res?.data?.results[0].record));
+        setHeaders(Object.keys(res?.data?.results[0].record));
+
+        setBase64String(res?.data?.results[0].image_base64);
+      }
+
+      // if (Array.isArray(res) && res.length > 0) {
+      //   setSearchResults(res);
+      // } else {
+      //   setSearchResults([]);
+      //   toast.info("No results found");
+      // }
+    } catch (error) {
+      console.error(error?.response?.data);
+      toast.error(error?.response?.data?.detail);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const alltableOptions = tableOptions.map((item, index) => {
+    return (
+      <option key={index} value={item}>
+        {item}
+      </option>
+    );
+  });
+  // console.log(tableOptions);
   return (
     <>
       <Sidebar />
@@ -47,6 +89,16 @@ const Entryfinder = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full border border-gray-300 rounded-l px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           />
+          <select
+            value={selectedTable}
+            onChange={(e) => setSelectedTable(e.target.value)}
+            className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            <option value="" disabled>
+              Select Table
+            </option>
+            {alltableOptions}
+          </select>
           <button
             onClick={handleSearch}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-6 rounded-r"
@@ -60,47 +112,43 @@ const Entryfinder = () => {
           <table className="min-w-full table-auto">
             <thead className="bg-gray-200">
               <tr>
-                <th className="px-4 py-2 text-left">#</th>
-                <th className="px-4 py-2 text-left">Name</th>
-                <th className="px-4 py-2 text-left">Email</th>
-                <th className="px-4 py-2 text-left">Role</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Created At</th>
+                {headers.map((item, idx) => {
+                  return (
+                    <th className="px-4 py-2 text-left" key={idx}>
+                      {item}
+                    </th>
+                  );
+                })}
+                {/* <th className="px-4 py-2 text-left">Action</th> */}
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0 ? (
-                searchResults.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="border-b hover:bg-gray-100 cursor-pointer"
-                  >
-                    <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{item.username}</td>
-                    <td className="px-4 py-2">{item.email}</td>
-                    <td className="px-4 py-2">{item.role}</td>
-                    <td className="px-4 py-2">
-                      {item.isRestricted ? "Inactive" : "Active"}
-                    </td>
-                    <td className="px-4 py-2">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="text-center text-gray-500 py-4 italic"
-                  >
-                    {loading ? "Searching..." : "No data to display"}
+              <tr className="border-b hover:bg-gray-100 cursor-pointer">
+                {searchResults.map((item, index) => (
+                  <td className="px-4 py-2" key={index}>
+                    {item}
                   </td>
-                </tr>
-              )}
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
 
+        {/* Image Viewer */}
+        {/* {base64String && (
+          <img
+            src={`data:image/png;base64,${base64String}`}
+            alt="Base64 Image"
+            className="w-400 h-800 object-cover rounded"
+          />
+        )} */}
+        {base64String && (
+          <FullScreenViewer
+            img={`data:image/png;base64,${base64String}`}
+            width="640px"
+            snapView={true}
+          />
+        )}
         <ToastContainer />
       </div>
     </>

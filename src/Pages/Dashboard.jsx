@@ -279,7 +279,7 @@ const Dashboard = () => {
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                      Sl No.
+                      Sr No.
                     </th>
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                       Scanner Id
@@ -317,7 +317,7 @@ const Dashboard = () => {
                 <thead className="bg-gray-200">
                   <tr>
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                      Sl No.
+                      Sr No.
                     </th>
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                       Scanner Id

@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import qs from "qs";
 
 // https://txcfswqz-8000.inc1.devtunnels.ms/docs
-const URL = "http://192.168.1.24:8000";
+const URL = "http://192.168.1.15:8000";
 export const login = async (body) => {
   try {
     const response = await axios.post(
@@ -358,8 +358,6 @@ export const addNewPath = async (body) => {
   }
 };
 
-
-
 export const activatePath = async (folder_id) => {
   const token = localStorage.getItem("upsctoken");
 
@@ -385,5 +383,27 @@ export const activatePath = async (folder_id) => {
       data: error.response ? error.response.data : null,
       headers: error.response ? error.response.headers : null,
     };
+  }
+};
+
+export const searchRecord = async (tableName, queryDetail) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(
+      `${URL}/tables/searchrecord?table_name=${tableName}&search=${queryDetail}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
   }
 };

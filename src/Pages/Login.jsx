@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 const Login = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [showPassword,setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const emailRef = useRef();
   const passwordRef = useRef();
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Login = () => {
         // } else {
         //   navigate("/operator/upload", { replace: true });
         // }
-         navigate("/admin/dashboard", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
 
         toast.success(res?.data?.detail);
       }
@@ -99,6 +99,7 @@ const Login = () => {
                   type="email"
                   name="email"
                   id="email"
+                  // style={{ background: "black" }}
                   className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="name@company.com"
                   ref={emailRef}
@@ -113,7 +114,7 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  type={showPassword?"text":"password"}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   id="password"
                   placeholder="••••••••"
@@ -130,7 +131,9 @@ const Login = () => {
                       aria-describedby="remember"
                       type="checkbox"
                       className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                      onChange={()=>{setShowPassword(prev=>!prev)}}
+                      onChange={() => {
+                        setShowPassword((prev) => !prev);
+                      }}
                       // required
                     />
                   </div>
@@ -138,7 +141,6 @@ const Login = () => {
                     <label
                       htmlFor="remember"
                       className="text-gray-500 dark:text-gray-300"
-
                     >
                       show password
                     </label>
