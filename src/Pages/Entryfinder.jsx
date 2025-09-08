@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { fetchTables, searchRecord } from "../helper/Urlhelper";
+import {
+  fetchTables,
+  getColumnFromTable,
+  searchRecord,
+} from "../helper/Urlhelper";
 // import { getEntryBySearch } from "../helper/Urlhelper"; // <-- API for search
 import { ImageViewer, FullScreenViewer } from "react-iv-viewer";
 import "react-iv-viewer/dist/react-iv-viewer.css";
@@ -14,6 +18,8 @@ const Entryfinder = () => {
   const [tableOptions, setTableOptions] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [base64String, setBase64String] = useState(null);
+  const [columnOptions, setColumnOptions] = useState([]);
+  const [selectedColumn, setSelectedColumn] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -29,6 +35,22 @@ const Entryfinder = () => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    const fetchColumns = async (table) => {
+      try {
+        const col = await getColumnFromTable(table);
+        if (col.data.columns) {
+          setColumnOptions(col.data.columns);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    if (selectedTable) {
+      fetchColumns(selectedTable);
+    }
+  }, [selectedTable]);
+
   console.log(tableOptions);
 
   const handleSearch = async () => {
@@ -42,14 +64,16 @@ const Entryfinder = () => {
     }
     setLoading(true);
     try {
-      const res = await searchRecord(selectedTable, searchTerm); // API call
-      console.log(res);
+      const res = await searchRecord(selectedTable, searchTerm, selectedColumn); // API call
+      // console.log(res);
 
       if (res?.data?.success) {
-        setSearchResults(Object.values(res?.data?.results[0].record));
-        setHeaders(Object.keys(res?.data?.results[0].record));
+        // setSearchResults(Object.values(res?.data?.results[0].record));
+        console.log(res?.data?.results);
+        setSearchResults(res?.data?.results);
+        // setHeaders(Object.keys(res?.data?.results[0].record));
 
-        setBase64String(res?.data?.results[0].image_base64);
+        // setBase64String(res?.data?.results[0].image_base64);
       }
 
       // if (Array.isArray(res) && res.length > 0) {
@@ -73,6 +97,27 @@ const Entryfinder = () => {
       </option>
     );
   });
+
+  const allColumnTableOptions = columnOptions.map((item, index) => {
+    return (
+      <option key={index} value={item}>
+        {item}
+      </option>
+    );
+  });
+
+  const TableData = searchResults.map((item, rowIndex) => {
+    return (
+      <tr className="border-b hover:bg-gray-100 cursor-pointer" key={rowIndex}>
+        {Object.values(item.record).map((value, colIndex) => (
+          <td className="px-4 py-2" key={colIndex}>
+            {value}
+          </td>
+        ))}
+      </tr>
+    );
+  });
+
   // console.log(tableOptions);
   return (
     <>
@@ -91,6 +136,7 @@ const Entryfinder = () => {
           />
           <select
             value={selectedTable}
+            defaultValue={""}
             onChange={(e) => setSelectedTable(e.target.value)}
             className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           >
@@ -98,6 +144,17 @@ const Entryfinder = () => {
               Select Table
             </option>
             {alltableOptions}
+          </select>
+          <select
+            value={selectedColumn}
+            defaultValue={""}
+            onChange={(e) => setSelectedColumn(e.target.value)}
+            className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            <option value="" disabled>
+              Select Column
+            </option>
+            {allColumnTableOptions}
           </select>
           <button
             onClick={handleSearch}
@@ -123,13 +180,14 @@ const Entryfinder = () => {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b hover:bg-gray-100 cursor-pointer">
+              {/* <tr className="border-b hover:bg-gray-100 cursor-pointer">
                 {searchResults.map((item, index) => (
                   <td className="px-4 py-2" key={index}>
                     {item}
                   </td>
                 ))}
-              </tr>
+              </tr> */}
+              {TableData}
             </tbody>
           </table>
         </div>

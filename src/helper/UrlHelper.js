@@ -385,13 +385,35 @@ export const activatePath = async (folder_id) => {
     };
   }
 };
-
-export const searchRecord = async (tableName, queryDetail) => {
+// **************//////////////*************************++++++++++++ */
+export const searchRecord = async (tableName, queryDetail, col_name) => {
   const token = localStorage.getItem("upsctoken");
 
   try {
     const response = await axios.get(
-      `${URL}/tables/searchrecord?table_name=${tableName}&search=${queryDetail}`,
+      `${URL}/tables/searchrecord?table_name=${tableName}&search_value=${queryDetail}&column_name=${col_name}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getColumnFromTable = async (tableName) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(
+      `${URL}/tables/columns?table_name=${tableName}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
