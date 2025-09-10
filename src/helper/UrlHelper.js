@@ -429,3 +429,141 @@ export const getColumnFromTable = async (tableName) => {
     throw error;
   }
 };
+
+export const getImage = async (csvPath, frontSideImage) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(
+      `${URL}/tables/image?csv_path=${csvPath}&front_side_image=${frontSideImage}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+// Dashboard API'S
+
+export const getActiveUsers = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/activeusers`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getTotalUsers = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/totalusers`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getTotalFileScanned = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/totalfilescanned`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getTodayFileScanned = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/todaysfilescanned`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getTodaysScannerWise = async () => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/todaysdatascannerwise`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
+
+export const getTotalScannerWise = async (startTime, endTime) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(`${URL}/dashboard/totaldatascannerwise?start_date=${startTime}&end_date=${endTime}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+      },
+    });
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};

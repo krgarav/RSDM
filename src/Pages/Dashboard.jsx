@@ -2,11 +2,36 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import {
   downloadDataById,
+  getActiveUsers,
   getAllData,
+  getTodayFileScanned,
+  getTodaysScannerWise,
+  getTotalFileScanned,
+  getTotalScannerWise,
+  getTotalUsers,
   getUserAnalytics,
 } from "../helper/Urlhelper";
-import { FaFileCsv, FaFilePdf, FaUsers, FaUserCheck, FaFileAlt } from "react-icons/fa";
+import {
+  FaFileCsv,
+  FaFilePdf,
+  FaUsers,
+  FaUserCheck,
+  FaFileAlt,
+} from "react-icons/fa";
 import { MdAnalytics } from "react-icons/md";
+
+const getTodayAndYesterday = () => {
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const formatDate = (date) => date.toISOString().split("T")[0];
+
+  return {
+    today: formatDate(today),
+    yesterday: formatDate(yesterday),
+  };
+};
 function formatDate(dateString) {
   const date = new Date(dateString);
 
@@ -28,34 +53,65 @@ const Dashboard = () => {
   const [allData, setAllData] = useState([]);
   const [analyticDetails, setAnalyticDetails] = useState({
     activeUsers: 0,
-    uploadedFiles: 0,
-    users: 0,
+    totalUsers: 0,
+    totalFilesScanned: 0,
+    todayFilesScanned: 0,
   });
+
+  // useEffect(() => {
+  // const { today, yesterday } = getTodayAndYesterday();
+  //   console.log("Today:", today); // e.g., "2025-09-09"
+  //   console.log("Yesterday:", yesterday); // e.g., "2025-09-08"
+  // }, []);
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const res = await getAllData();
-
-        if (Array.isArray(res)) {
-          setAllData(res);
-        }
+        const { today, yesterday } = getTodayAndYesterday();
+        // console.log(today, yesterday);
+        const res = await getTodaysScannerWise();
+        const res2 = await getTotalScannerWise(yesterday, today);
+        console.log(res2);
+        // if (Array.isArray(res)) {
+        //   setAllData(res);
+        // }
       } catch (error) {
         console.log(error);
       }
     };
-    // fetchAllData();
+    fetchAllData();
   }, []);
 
   useEffect(() => {
     const fetchUserAnalytics = async () => {
       try {
-        const res = await getUserAnalytics();
-        setAnalyticDetails(res.analyticsData);
-        console.log(res);
-      } catch (error) {}
+        const [resActive, resTotal, resScanned, resToday] = await Promise.all([
+          getActiveUsers(),
+          getTotalUsers(),
+          getTotalFileScanned(),
+          getTodayFileScanned(),
+        ]);
+
+        // Update state if each response is successful
+        setAnalyticDetails((item) => ({
+          ...item,
+          activeUsers: resActive?.data?.active_users || 0,
+          totalUsers: resTotal?.data?.total_users || 0,
+          totalFilesScanned: resScanned?.data?.total_data_rows || 0,
+          todayFilesScanned: resToday?.data?.todays_data_rows || 0,
+        }));
+
+        // console.log("Active Users:", resActive?.data?.active_users);
+        // console.log("Total Users:", resTotal?.data?.total_users);
+        // console.log("Total Files Scanned:", resScanned?.data?.total_data_rows);
+        // console.log("Today Files Scanned:", resToday?.data?.todays_data_rows);
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+      }
     };
-    // fetchUserAnalytics();
+
+    fetchUserAnalytics();
   }, []);
+  console.log(analyticDetails);
   const handledTextDownload = async (rowDetail) => {
     const date = rowDetail.createdAt;
 
@@ -233,14 +289,14 @@ const Dashboard = () => {
         </h1>
 
         {/* Stats */}
-       {/* Analytics Cards */}
+        {/* Analytics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
             <h2 className="text-lg font-semibold text-gray-600 flex items-center gap-2">
               <FaFileAlt className="text-blue-500" /> Today's Total Scanned
             </h2>
             <p className="text-3xl font-bold text-blue-600 mt-2">
-              {analyticDetails.uploadedFiles}
+              {analyticDetails.todayFilesScanned}
             </p>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
@@ -248,7 +304,7 @@ const Dashboard = () => {
               <FaFileAlt className="text-indigo-500" /> Total File Scanned
             </h2>
             <p className="text-3xl font-bold text-indigo-600 mt-2">
-              {analyticDetails.uploadedFiles}
+              {analyticDetails.totalFilesScanned}
             </p>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
@@ -256,7 +312,7 @@ const Dashboard = () => {
               <FaUsers className="text-green-500" /> All Users
             </h2>
             <p className="text-3xl font-bold text-green-600 mt-2">
-              {analyticDetails.users}
+              {analyticDetails.totalUsers}
             </p>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">

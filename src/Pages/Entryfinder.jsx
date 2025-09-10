@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   fetchTables,
   getColumnFromTable,
+  getImage,
   searchRecord,
 } from "../helper/Urlhelper";
 // import { getEntryBySearch } from "../helper/Urlhelper"; // <-- API for search
@@ -21,6 +22,8 @@ const Entryfinder = () => {
   const [columnOptions, setColumnOptions] = useState([]);
   const [selectedColumn, setSelectedColumn] = useState(null);
 
+
+  
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -105,10 +108,27 @@ const Entryfinder = () => {
       </option>
     );
   });
+  const handleRowClick = async (item) => {
+    setBase64String(null);
+    const csvPath = item.record["CsvPath"];
+    const frontSideImg = item.record["Front-Side-Image"];
+    console.log(item.record["Front-Side-Image"]);
+    console.log(item.record["CsvPath"]);
 
+    const res = await getImage(csvPath, frontSideImg);
+    console.log(res.data.success);
+    if (res?.data?.success) {
+      setBase64String(res.data.image_base64);
+      // console.log(res.data.image_base64);
+    }
+  };
   const TableData = searchResults.map((item, rowIndex) => {
     return (
-      <tr className="border-b hover:bg-gray-100 cursor-pointer" key={rowIndex}>
+      <tr
+        onClick={() => handleRowClick(item)}
+        className="border-b hover:bg-gray-100 cursor-pointer"
+        key={rowIndex}
+      >
         {Object.values(item.record).map((value, colIndex) => (
           <td className="px-4 py-2" key={colIndex}>
             {value}
