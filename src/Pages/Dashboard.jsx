@@ -19,6 +19,10 @@ import {
   FaFileAlt,
 } from "react-icons/fa";
 import { MdAnalytics } from "react-icons/md";
+import FileScannedTable from "../component/FileScannedTable";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 
 const getTodayAndYesterday = () => {
   const today = new Date();
@@ -32,6 +36,19 @@ const getTodayAndYesterday = () => {
     yesterday: formatDate(yesterday),
   };
 };
+const getTodayAndOneMonthBefore = () => {
+  const today = new Date();
+  const oneMonthBefore = new Date();
+  oneMonthBefore.setMonth(today.getMonth() - 1);
+
+  const formatDate = (date) => date.toISOString();
+
+  return {
+    today: formatDate(today),
+    oneMonthBefore: formatDate(oneMonthBefore),
+  };
+};
+
 function formatDate(dateString) {
   const date = new Date(dateString);
 
@@ -51,36 +68,67 @@ function formatDate(dateString) {
 }
 const Dashboard = () => {
   const [allData, setAllData] = useState([]);
+
+  const [rangeData, setRangeData] = useState({});
+  const [todayTotalData, setTodayTotalData] = useState({});
   const [analyticDetails, setAnalyticDetails] = useState({
     activeUsers: 0,
     totalUsers: 0,
     totalFilesScanned: 0,
     todayFilesScanned: 0,
   });
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
 
-  // useEffect(() => {
-  // const { today, yesterday } = getTodayAndYesterday();
-  //   console.log("Today:", today); // e.g., "2025-09-09"
-  //   console.log("Yesterday:", yesterday); // e.g., "2025-09-08"
-  // }, []);
+  useEffect(() => {
+    const { today, oneMonthBefore } = getTodayAndOneMonthBefore();
+    setDateRange([oneMonthBefore, today]);
+  }, []);
+
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const { today, yesterday } = getTodayAndYesterday();
-        // console.log(today, yesterday);
-        const res = await getTodaysScannerWise();
-        const res2 = await getTotalScannerWise(yesterday, today);
-        console.log(res2);
-        // if (Array.isArray(res)) {
-        //   setAllData(res);
-        // }
+        const [startDate, endDate] = dateRange;
+
+        if (startDate && endDate) {
+          const formattedStartDate = format(startDate, "yyyy-MM-dd");
+          const formattedEndDate = format(endDate, "yyyy-MM-dd");
+
+          const res2 = await getTotalScannerWise(
+            formattedStartDate,
+            formattedEndDate
+          );
+          if (res2?.data?.total_rows_per_scanner) {
+            setRangeData(res2?.data?.total_rows_per_scanner);
+          } else {
+            setRangeData({});
+          }
+        } else {
+          console.log("Date range not selected yet");
+          setRangeData({});
+        }
       } catch (error) {
         console.log(error);
       }
     };
-    fetchAllData();
-  }, []);
 
+    fetchAllData();
+  }, [dateRange]);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const res2 = await getTodaysScannerWise();
+        if (res2?.data?.total_rows_per_scanner) {
+          setTodayTotalData(res2?.data?.total_rows_per_scanner);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchAllData();
+  }, [dateRange]);
   useEffect(() => {
     const fetchUserAnalytics = async () => {
       try {
@@ -163,6 +211,24 @@ const Dashboard = () => {
       console.log(error);
     }
   };
+
+  const handleDateChange = (update) => {
+    if (!update || (Array.isArray(update) && !update[0] && !update[1])) {
+      console.log("Date range cleared!");
+      // 👉 run your function here
+      // runOnClear();
+      setDateRange([null, null]);
+      return;
+    }
+    setDateRange(update);
+
+    if (update[0]) {
+      console.log("Start:", format(update[0], "dd-MM-yyyy"));
+    }
+    if (update[1]) {
+      console.log("End:", format(update[1], "dd-MM-yyyy"));
+    }
+  };
   const handleCsvDownload = async (rowDetail) => {
     const date = rowDetail.createdAt;
     try {
@@ -212,6 +278,40 @@ const Dashboard = () => {
       console.log(error);
     }
   };
+
+  const TotalTodaysData = Object.entries(todayTotalData).map((item, index) => {
+    const [scannerId, sheetScanned] = item;
+    return (
+      <tr
+        key={index}
+        className="border-b hover:bg-gray-100 cursor-pointer"
+        onClick={() => {
+          // handleUserModal(user);
+        }}
+      >
+        <td className="px-4 py-2">{index + 1}</td>
+        <td className="px-4 py-2">{scannerId}</td>
+        <td className="px-4 py-2">{sheetScanned}</td>
+      </tr>
+    );
+  });
+  const TotalRangeData = Object.entries(rangeData).map((item, index) => {
+    const [scannerId, sheetScanned] = item;
+    return (
+      <tr
+        key={index}
+        className="border-b hover:bg-gray-100 cursor-pointer"
+        onClick={() => {
+          // handleUserModal(user);
+        }}
+      >
+        <td className="px-4 py-2">{index + 1}</td>
+        <td className="px-4 py-2">{scannerId}</td>
+        <td className="px-4 py-2">{sheetScanned}</td>
+      </tr>
+    );
+  });
+
   const AllUploadedData = allData.map((user, index) => (
     <tr
       key={index}
@@ -343,13 +443,10 @@ const Dashboard = () => {
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                       Sheets Scanned
                     </th>
-                    <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                      Created At
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {AllUploadedData.length === 0 ? (
+                  {TotalTodaysData.length === 0 ? (
                     <tr>
                       <td
                         colSpan="4"
@@ -359,15 +456,31 @@ const Dashboard = () => {
                       </td>
                     </tr>
                   ) : (
-                    AllUploadedData
+                    TotalTodaysData
                   )}
                 </tbody>
               </table>
             </div>
           </div>
 
+          {/* <FileScannedTable AllUploadedData={[]} /> */}
           <div className="bg-white p-6 rounded-lg shadow-md flex-1">
-            <h2 className="text-xl font-semibold">Total File Scanned</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Total File Scanned</h2>
+
+              {/* Date Range Picker */}
+              <DatePicker
+                selectsRange={true}
+                startDate={startDate}
+                endDate={endDate}
+                onChange={handleDateChange}
+                isClearable={true}
+                dateFormat="dd-MM-yyyy"
+                placeholderText="Select date range"
+                className="border border-gray-300 px-6 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             <div className="overflow-auto bg-white shadow-md rounded-lg max-h-[60vh] my-4">
               <table className="min-w-full table-auto w-full">
                 <thead className="bg-gray-200">
@@ -381,13 +494,10 @@ const Dashboard = () => {
                     <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                       Sheets Scanned
                     </th>
-                    <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
-                      Created At
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {AllUploadedData.length === 0 ? (
+                  {TotalRangeData.length === 0 ? (
                     <tr>
                       <td
                         colSpan="4"
@@ -397,7 +507,7 @@ const Dashboard = () => {
                       </td>
                     </tr>
                   ) : (
-                    AllUploadedData
+                    TotalRangeData
                   )}
                 </tbody>
               </table>
