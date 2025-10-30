@@ -17,75 +17,12 @@ const getTodayAndOneMonthBefore = () => {
   };
 };
 const UserLog = () => {
-  const [userLog, setUserLog] = useState([
-    {
-      Scanner: "Admin",
-      UserName: "Admin",
-      IP: "192.168.0.201",
-      TotalTimeMinutes: 0.45,
-      TotalTimeHours: 0.01,
-    },
-    {
-      Scanner: "USER-01",
-      UserName: "USER-01",
-      IP: "192.168.0.101",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-01",
-      UserName: "USER-01",
-      IP: "192.168.0.102",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-03",
-      UserName: "USER-03",
-      IP: "192.168.0.103",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-04",
-      UserName: "USER-04",
-      IP: "192.168.0.104",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-05",
-      UserName: "USER-05",
-      IP: "192.168.0.105",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-12",
-      UserName: "USER-12",
-      IP: "192.168.0.112",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-13",
-      UserName: "USER-13",
-      IP: "192.168.0.113",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-    {
-      Scanner: "USER-14",
-      UserName: "USER-14",
-      IP: "192.168.0.114",
-      TotalTimeMinutes: 0,
-      TotalTimeHours: 0.0,
-    },
-  ]);
+  const [userLog, setUserLog] = useState([]);
 
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
-
+  const [loading, setLoading] = useState(false);
+  const skeletonRows = Array.from({ length: 5 });
   useEffect(() => {
     const { today, oneMonthBefore } = getTodayAndOneMonthBefore();
     setDateRange([oneMonthBefore, today]);
@@ -94,6 +31,7 @@ const UserLog = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        setLoading(true);
         const [startDate, endDate] = dateRange;
 
         if (startDate && endDate) {
@@ -115,6 +53,8 @@ const UserLog = () => {
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -202,13 +142,43 @@ const UserLog = () => {
                 </tr>
               </thead>
               <tbody>
-                {UserLogDetails.length === 0 ? (
+                {loading ? (
+                  // Skeleton loading state
+                  skeletonRows.map((_, i) => (
+                    <tr
+                      key={i}
+                      className="animate-pulse"
+                      style={{ animationDuration: "0.7s" }}
+                    >
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-8"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-24"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-32"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-28"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-16"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-16"></div>
+                      </td>
+                    </tr>
+                  ))
+                ) : UserLogDetails.length === 0 ? (
+                  // No data message
                   <tr>
                     <td colSpan="6" className="text-center py-4 text-gray-500">
-                      No data present
+                      No data found for the selected date range.
                     </td>
                   </tr>
                 ) : (
+                  // Render data
                   UserLogDetails
                 )}
               </tbody>
