@@ -119,8 +119,8 @@ const Dashboard = () => {
     const fetchAllData = async () => {
       try {
         const res2 = await getTodaysScannerWise();
-        if (res2?.data?.total_rows_per_scanner) {
-          setTodayTotalData(res2?.data?.total_rows_per_scanner);
+        if (res2?.data?.todays_data_per_scanner) {
+          setTodayTotalData(res2?.data?.todays_data_per_scanner);
         }
       } catch (error) {
         console.log(error);
