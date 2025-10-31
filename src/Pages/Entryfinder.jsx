@@ -74,7 +74,7 @@ const Entryfinder = () => {
         // setSearchResults(Object.values(res?.data?.results[0].record));
         console.log(res?.data?.results);
         setSearchResults(res?.data?.results);
-        // setHeaders(Object.keys(res?.data?.results[0].record));
+        setHeaders(Object.keys(res?.data?.results[0].record));
 
         // setBase64String(res?.data?.results[0].image_base64);
       }
