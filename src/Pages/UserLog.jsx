@@ -69,7 +69,15 @@ const UserLog = () => {
   }, [startDate, endDate]);
   const UserLogDetails = userLog.map((item, index) => {
     // console.log(item.Scanner);
-    const { Scanner, UserName, IP, TotalTimeMinutes, TotalTimeHours } = item;
+    const {
+      Scanner,
+      UserName,
+      IP,
+      TotalTimeMinutes,
+      TotalTimeHours,
+      LogoutCount,
+      ScanningCount,
+    } = item;
     return (
       <tr
         key={index}
@@ -84,6 +92,8 @@ const UserLog = () => {
         <td className="px-4 py-2">{IP}</td>
         <td className="px-4 py-2">{TotalTimeMinutes}</td>
         <td className="px-4 py-2">{TotalTimeHours}</td>
+        <td className="px-4 py-2">{LogoutCount}</td>
+        <td className="px-4 py-2">{ScanningCount}</td>
       </tr>
     );
   });
@@ -211,6 +221,12 @@ const UserLog = () => {
                   <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
                     Total Time(Hours)
                   </th>
+                  <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
+                    Logout Count
+                  </th>
+                  <th className="px-4 py-2 text-left sticky top-0 bg-gray-100">
+                    Scanning Count
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -240,12 +256,18 @@ const UserLog = () => {
                       <td className="px-4 py-2">
                         <div className="h-4 bg-gray-300 rounded w-16"></div>
                       </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-16"></div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="h-4 bg-gray-300 rounded w-16"></div>
+                      </td>
                     </tr>
                   ))
                 ) : UserLogDetails.length === 0 ? (
                   // No data message
                   <tr>
-                    <td colSpan="6" className="text-center py-4 text-gray-500">
+                    <td colSpan="8" className="text-center py-4 text-gray-500">
                       No data found for the selected date range.
                     </td>
                   </tr>
