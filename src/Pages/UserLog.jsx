@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import DatePicker from "react-datepicker";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { use } from "react";
 import { getUserLogsInfo } from "../helper/Urlhelper";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers-pro/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
+import { DateTimeRangePicker } from "@mui/x-date-pickers-pro/DateTimeRangePicker";
+
 const getTodayAndOneMonthBefore = () => {
   const today = new Date();
   const oneMonthBefore = new Date();
@@ -20,23 +25,25 @@ const UserLog = () => {
   const [userLog, setUserLog] = useState([]);
 
   const [dateRange, setDateRange] = useState([null, null]);
-  const [startDate, endDate] = dateRange;
+  // const [startDate, endDate] = dateRange;
   const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const skeletonRows = Array.from({ length: 5 });
-  useEffect(() => {
-    const { today, oneMonthBefore } = getTodayAndOneMonthBefore();
-    setDateRange([oneMonthBefore, today]);
-  }, []);
+  // useEffect(() => {
+  //   const { today, oneMonthBefore } = getTodayAndOneMonthBefore();
+  //   setStartDate(oneMonthBefore); // start = 1 month before today
+  //   setEndDate(today); // end = today
+  // }, []);
 
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [startDate, endDate] = dateRange;
 
         if (startDate && endDate) {
-          const formattedStartDate = format(startDate, "yyyy-MM-dd");
-          const formattedEndDate = format(endDate, "yyyy-MM-dd");
+          const formattedStartDate = format(startDate, "yyyy-MM-dd HH:mm");
+          const formattedEndDate = format(endDate, "yyyy-MM-dd HH:mm");
 
           const res2 = await getUserLogsInfo(
             formattedStartDate,
@@ -59,7 +66,7 @@ const UserLog = () => {
     };
 
     fetchAllData();
-  }, [dateRange]);
+  }, [startDate, endDate]);
   const UserLogDetails = userLog.map((item, index) => {
     // console.log(item.Scanner);
     const { Scanner, UserName, IP, TotalTimeMinutes, TotalTimeHours } = item;
@@ -80,23 +87,61 @@ const UserLog = () => {
       </tr>
     );
   });
-  const handleDateChange = (update) => {
-    if (!update || (Array.isArray(update) && !update[0] && !update[1])) {
-      console.log("Date range cleared!");
-      // 👉 run your function here
-      // runOnClear();
-      setDateRange([null, null]);
-      return;
-    }
-    setDateRange(update);
+  // const handleDateChange = (update) => {
+  //   if (!update || (Array.isArray(update) && !update[0] && !update[1])) {
+  //     console.log("Date range cleared!");
+  //     // 👉 run your function here
+  //     // runOnClear();
+  //     setDateRange([null, null]);
+  //     return;
+  //   }
+  //   setDateRange(update);
 
-    if (update[0]) {
-      console.log("Start:", format(update[0], "dd-MM-yyyy"));
-    }
-    if (update[1]) {
-      console.log("End:", format(update[1], "dd-MM-yyyy"));
-    }
+  //   if (update[0]) {
+  //     console.log("Start:", format(update[0], "dd-MM-yyyy"));
+  //   }
+  //   if (update[1]) {
+  //     console.log("End:", format(update[1], "dd-MM-yyyy"));
+  //   }
+  // };
+  // const handleDateChange = (update) => {
+  //   // Clear logic
+  //   if (!update || (Array.isArray(update) && !update[0] && !update[1])) {
+  //     console.log("Date range cleared!");
+  //     setDateRange([null, null]);
+  //     return;
+  //   }
+
+  //   setDateRange(update);
+
+  //   if (update[0]) {
+  //     console.log("Start:", format(update[0], "dd-MM-yyyy HH:mm"));
+  //   }
+  //   if (update[1]) {
+  //     console.log("End:", format(update[1], "dd-MM-yyyy HH:mm"));
+  //   }
+  // };
+
+  const handleStartChange = (date) => {
+    setStartDate(date);
+    if (date && endDate && date > endDate) setEndDate(null);
   };
+
+  const handleEndChange = (date) => {
+    setEndDate(date);
+  };
+
+  const handleClear = () => {
+    setStartDate(null);
+    setEndDate(null);
+    console.log("Date range cleared!");
+  };
+
+  const handleLog = () => {
+    if (startDate) console.log("Start:", format(startDate, "dd-MM-yyyy HH:mm"));
+    if (endDate) console.log("End:", format(endDate, "dd-MM-yyyy HH:mm"));
+  };
+
   return (
     <>
       <Sidebar />
@@ -105,16 +150,43 @@ const UserLog = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">User Log Details</h2>
             {/* Date Range Picker */}
-            <DatePicker
-              selectsRange={true}
-              startDate={startDate}
-              endDate={endDate}
-              onChange={handleDateChange}
-              isClearable={true}
-              dateFormat="dd-MM-yyyy"
-              placeholderText="Select date range"
-              className="border border-gray-300 px-6 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="gap-2 flex">
+              <DatePicker
+                selected={startDate}
+                onChange={handleStartChange}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                showTimeSelect
+                timeFormat="HH:mm" // "hh:mm aa" for 12-hour format
+                timeIntervals={15}
+                dateFormat="dd-MM-yyyy HH:mm"
+                placeholderText="Start date & time"
+                className="border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                isClearable
+                portalId="root" // ✅ prevents position jump
+                popperPlacement="bottom-start" // or "top-start"
+              />
+
+              {/* End DateTime Picker */}
+              <DatePicker
+                selected={endDate}
+                onChange={handleEndChange}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd-MM-yyyy HH:mm"
+                placeholderText="End date & time"
+                className="border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                isClearable
+                portalId="root" // ✅ prevents position jump
+                popperPlacement="bottom-start" // or "top-start"
+              />
+            </div>
           </div>
 
           <div className="overflow-auto bg-white shadow-md rounded-lg max-h-[60vh] my-4">
