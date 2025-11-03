@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import { FaSearch } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
+import { fetchTables, searchStudentRecord } from "../helper/Urlhelper";
+import { toast } from "react-toastify";
 const StudentSearch = () => {
   // ✅ Define all form states
   const [formData, setFormData] = useState({
@@ -18,7 +20,21 @@ const StudentSearch = () => {
     CsvPath: "",
     BoxNumber: "",
   });
-
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [tableOptions, setTableOptions] = useState([]);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetchTables();
+      if (Array.isArray(res.data.tables)) {
+        setTableOptions(res.data.tables);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   // ✅ Handle input change
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -29,29 +45,51 @@ const StudentSearch = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting form data:", formData);
-    // alert(formData)
+    // ✅ Filter out empty column values
+    const filteredColumns = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== "")
+    );
 
-    // try {
-    //   // Example API call (adjust URL and method as needed)
-    //   const response = await fetch("https://your-api-endpoint.com/search", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(formData),
-    //   });
+    const obj = {
+      columns: filteredColumns,
+      table: selectedTable,
+    };
 
-    //   const result = await response.json();
-    //   console.log("API Response:", result);
+    console.log("Submitting payload:", obj);
 
-    //   // TODO: Handle success (show data, update UI, etc.)
-    // } catch (error) {
-    //   console.error("API Error:", error);
-    //   // TODO: Handle error feedback to user
-    // }
+    try {
+      // ✅ Show loading toast
+      const loadingToast = toast.loading("Searching records...");
+
+      // ✅ Call the API
+      const response = await searchStudentRecord(obj);
+
+      // ✅ Update success toast
+      toast.update(loadingToast, {
+        render: `✅ Found ${response.results?.length || 0} matching record(s)`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+
+      // Optionally update state with results
+      // setResults(response.results);
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+
+      // ✅ Show error toast
+      toast.error(
+        error.response?.data?.detail || "Something went wrong while searching."
+      );
+    }
   };
-
+  const alltableOptions = tableOptions.map((item, index) => {
+    return (
+      <option key={index} value={item}>
+        {item}
+      </option>
+    );
+  });
   return (
     <>
       <Sidebar />
@@ -215,13 +253,13 @@ const StudentSearch = () => {
 
             {/* Created At */}
             <div className="flex flex-col">
-              <label htmlFor="CreatedAt" className="text-gray-700 mb-1 text-sm">
-                Created At
+              <label htmlFor="FullName" className="text-gray-700 mb-1 text-sm">
+                Full Name
               </label>
               <input
-                type="datetime-local"
-                id="CreatedAt"
-                value={formData.CreatedAt}
+                type="text"
+                id="FullName"
+                value={formData.FullName}
                 onChange={handleChange}
                 className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -257,6 +295,17 @@ const StudentSearch = () => {
 
             {/* Buttons */}
             <div className="col-span-2 md:col-span-4 flex justify-end gap-3 mt-2">
+              <select
+                value={selectedTable}
+                defaultValue={""}
+                onChange={(e) => setSelectedTable(e.target.value)}
+                className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+              >
+                <option value="" disabled>
+                  Select Table
+                </option>
+                {alltableOptions}
+              </select>
               <button
                 type="submit"
                 className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow transition"

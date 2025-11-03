@@ -4,8 +4,8 @@ import { jwtDecode } from "jwt-decode";
 import qs from "qs";
 
 // https://txcfswqz-8000.inc1.devtunnels.ms/docs
-const URL = "http://192.168.0.100:8000";
-// const URL = "http://localhost:8000";
+// const URL = "http://192.168.0.100:8000";
+const URL = "http://localhost:8000";
 export const login = async (body) => {
   try {
     const response = await axios.post(
@@ -409,6 +409,28 @@ export const searchRecord = async (tableName, queryDetail, col_name) => {
   }
 };
 
+export const searchStudentRecord = async (obj) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.post(
+      `${URL}/tables/searchstudentwiserecord`, // ✅ POST instead of GET
+      obj, // ✅ send your JSON body here
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data; // or return response if you want headers too
+  } catch (error) {
+    console.error("Error fetching student records:", error);
+    throw error;
+  }
+};
+
 export const getColumnFromTable = async (tableName) => {
   const token = localStorage.getItem("upsctoken");
 
@@ -554,11 +576,14 @@ export const getTotalScannerWise = async (startTime, endTime) => {
   const token = localStorage.getItem("upsctoken");
 
   try {
-    const response = await axios.get(`${URL}/dashboard/totaldatascannerwise?start_date=${startTime}&end_date=${endTime}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
-      },
-    });
+    const response = await axios.get(
+      `${URL}/dashboard/totaldatascannerwise?start_date=${startTime}&end_date=${endTime}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
 
     // Return both the data and headers in an object
     return response;
@@ -569,15 +594,18 @@ export const getTotalScannerWise = async (startTime, endTime) => {
   }
 };
 
-export const getUserLogsInfo= async (startTime, endTime) => {
+export const getUserLogsInfo = async (startTime, endTime) => {
   const token = localStorage.getItem("upsctoken");
 
   try {
-    const response = await axios.get(`${URL}/opticviewlogs/loginlogs?start_date=${startTime}&end_date=${endTime}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
-      },
-    });
+    const response = await axios.get(
+      `${URL}/opticviewlogs/loginlogs?start_date=${startTime}&end_date=${endTime}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
 
     // Return both the data and headers in an object
     return response;
