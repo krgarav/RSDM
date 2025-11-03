@@ -54,7 +54,6 @@ const Entryfinder = () => {
     }
   }, [selectedTable]);
 
-  console.log(tableOptions);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {

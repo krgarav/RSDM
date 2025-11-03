@@ -22,6 +22,8 @@ const StudentSearch = () => {
   });
   const [selectedTable, setSelectedTable] = useState(null);
   const [tableOptions, setTableOptions] = useState([]);
+  const [headers, setHeaders] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -63,7 +65,7 @@ const StudentSearch = () => {
 
       // ✅ Call the API
       const response = await searchStudentRecord(obj);
-
+      console.log("API Response:", response);
       // ✅ Update success toast
       toast.update(loadingToast, {
         render: `✅ Found ${response.results?.length || 0} matching record(s)`,
@@ -73,7 +75,9 @@ const StudentSearch = () => {
       });
 
       // Optionally update state with results
-      // setResults(response.results);
+      setHeaders(Object.keys(response?.results[0]));
+
+      setSearchResults(response?.results);
     } catch (error) {
       console.error("❌ API Error:", error.response?.data || error.message);
 
@@ -90,6 +94,20 @@ const StudentSearch = () => {
       </option>
     );
   });
+  console.log("Search Results:", headers);
+  const TableData = searchResults.map((item, rowIndex) => (
+    <tr
+      key={rowIndex}
+      className="border-b hover:bg-gray-100 cursor-pointer"
+      // onClick={() => handleRowClick(item)}
+    >
+      {Object.values(item).map((value, colIndex) => (
+        <td key={colIndex} className="px-4 py-2 text-sm text-gray-700">
+          {value !== null && value !== undefined ? value.toString() : ""}
+        </td>
+      ))}
+    </tr>
+  ));
   return (
     <>
       <Sidebar />
@@ -315,6 +333,24 @@ const StudentSearch = () => {
               </button>
             </div>
           </form>
+
+          {/* Table */}
+          <div className="overflow-x-auto bg-white shadow-md rounded-lg max-h-[50vh]">
+            <table className="min-w-full table-auto">
+              <thead className="bg-gray-200">
+                <tr>
+                  {headers.map((item, idx) => {
+                    return (
+                      <th className="px-4 py-2 text-left" key={idx}>
+                        {item}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>{TableData}</tbody>
+            </table>
+          </div>
         </div>
       </div>
     </>
