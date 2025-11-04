@@ -2,9 +2,14 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import { FaSearch } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
-import { fetchTables, searchStudentRecord } from "../helper/Urlhelper";
+import {
+  fetchTables,
+  getImage,
+  searchStudentRecord,
+} from "../helper/Urlhelper";
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "date-fns";
+import { FullScreenViewer } from "react-iv-viewer";
 const StudentSearch = () => {
   // ✅ Define all form states
   const [formData, setFormData] = useState({
@@ -27,7 +32,7 @@ const StudentSearch = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
+  const [base64String, setBase64String] = useState(null);
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -135,12 +140,26 @@ const StudentSearch = () => {
       </option>
     );
   });
+  const handleRowClick = async (item) => {
+    setBase64String(null);
+    const csvPath = item?.CsvPath;
+    const frontSideImg = item?.Front_Side_Image;
+    if (!csvPath || !frontSideImg) {
+      toast.error("CSV Path or Front Side Image data is missing.");
+      return;
+    }
 
+    const res = await getImage(csvPath, frontSideImg);
+    if (res?.data?.success) {
+      setBase64String(res.data.image_base64);
+      // console.log(res.data.image_base64);
+    }
+  };
   const TableData = searchResults.map((item, rowIndex) => (
     <tr
       key={rowIndex}
       className="border-b hover:bg-gray-100 cursor-pointer"
-      // onClick={() => handleRowClick(item)}
+      onClick={() => handleRowClick(item)}
     >
       {Object.values(item).map((value, colIndex) => (
         <td key={colIndex} className="px-4 py-2 text-sm text-gray-700">
@@ -436,6 +455,13 @@ const StudentSearch = () => {
           </div>
         </div>
       </div>
+      {base64String && (
+        <FullScreenViewer
+          img={`data:image/png;base64,${base64String}`}
+          width="640px"
+          snapView={true}
+        />
+      )}
       <ToastContainer />
     </>
   );

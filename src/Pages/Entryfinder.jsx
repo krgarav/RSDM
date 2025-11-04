@@ -67,7 +67,7 @@ const Entryfinder = () => {
     setLoading(true);
     try {
       const res = await searchRecord(selectedTable, searchTerm, selectedColumn); // API call
-      // console.log(res);
+      
 
       if (res?.data?.success) {
         // setSearchResults(Object.values(res?.data?.results[0].record));
