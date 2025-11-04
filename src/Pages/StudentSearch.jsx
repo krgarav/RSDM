@@ -3,7 +3,8 @@ import Sidebar from "../component/sidebar";
 import { FaSearch } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
 import { fetchTables, searchStudentRecord } from "../helper/Urlhelper";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { set } from "date-fns";
 const StudentSearch = () => {
   // ✅ Define all form states
   const [formData, setFormData] = useState({
@@ -24,6 +25,9 @@ const StudentSearch = () => {
   const [tableOptions, setTableOptions] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -46,7 +50,13 @@ const StudentSearch = () => {
   // ✅ Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedTable) {
+      toast.warn("Please select a table");
+      return;
+    }
+    setIsLoading(true);
 
+    setHasSearched(true);
     // ✅ Filter out empty column values
     const filteredColumns = Object.fromEntries(
       Object.entries(formData).filter(([_, v]) => v !== "")
@@ -57,36 +67,67 @@ const StudentSearch = () => {
       table: selectedTable,
     };
 
-    console.log("Submitting payload:", obj);
+    let loadingToast;
 
     try {
       // ✅ Show loading toast
-      const loadingToast = toast.loading("Searching records...");
+      loadingToast = toast.loading("Searching records...");
 
       // ✅ Call the API
       const response = await searchStudentRecord(obj);
-      console.log("API Response:", response);
-      // ✅ Update success toast
+      const results = response?.results || [];
+
+      // ✅ Handle "no records found"
+      if (results.length === 0) {
+        toast.update(loadingToast, {
+          render: "No records found.",
+          type: "info",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        setSearchResults([]);
+        setHeaders([]);
+        return;
+      }
+
+      // ✅ Success case
       toast.update(loadingToast, {
-        render: `✅ Found ${response.results?.length || 0} matching record(s)`,
+        render: `Found ${results.length} matching record(s)`,
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
 
-      // Optionally update state with results
-      setHeaders(Object.keys(response?.results[0]));
-
-      setSearchResults(response?.results);
+      setHeaders(Object.keys(results[0]));
+      setSearchResults(results);
     } catch (error) {
       console.error("❌ API Error:", error.response?.data || error.message);
 
-      // ✅ Show error toast
-      toast.error(
-        error.response?.data?.detail || "Something went wrong while searching."
-      );
+      // ✅ Update the *same* loading toast to show the error
+      if (loadingToast) {
+        toast.update(loadingToast, {
+          render:
+            error.response?.data?.detail ||
+            "Something went wrong while searching.",
+          type: "error",
+          isLoading: false,
+          autoClose: 4000,
+        });
+      } else {
+        // Fallback — in case loading toast didn't exist for some reason
+        toast.error(
+          error.response?.data?.detail ||
+            "Something went wrong while searching."
+        );
+      }
+      setSearchResults([]);
+      setHeaders([]);
+    } finally {
+      // ✅ Always re-enable the button
+      setIsLoading(false);
     }
   };
+
   const alltableOptions = tableOptions.map((item, index) => {
     return (
       <option key={index} value={item}>
@@ -94,7 +135,7 @@ const StudentSearch = () => {
       </option>
     );
   });
-  console.log("Search Results:", headers);
+
   const TableData = searchResults.map((item, rowIndex) => (
     <tr
       key={rowIndex}
@@ -111,15 +152,10 @@ const StudentSearch = () => {
   return (
     <>
       <Sidebar />
-      <div className="p-4 sm:ml-64 mt-10 flex flex-col">
+      <div className="p-4 sm:ml-64 mt-2 flex flex-col">
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h1 className="text-center text-2xl font-bold text-blue-700 mb-6">
-            STUDENTS PLATFORM -{" "}
-            <span className="text-orange-500">Search OMR Students Results</span>
-          </h1>
-
           <form
-            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            className="grid grid-cols-2 md:grid-cols-6 gap-4"
             onSubmit={handleSubmit}
           >
             {/* Subject Code */}
@@ -243,16 +279,14 @@ const StudentSearch = () => {
               <label htmlFor="ABSENT" className="text-gray-700 mb-1 text-sm">
                 Absent
               </label>
-              <select
+              <input
+                type="text"
                 id="ABSENT"
                 value={formData.ABSENT}
                 onChange={handleChange}
+                placeholder="A or Empty"
                 className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+              />
             </div>
 
             {/* Scanner ID */}
@@ -269,7 +303,7 @@ const StudentSearch = () => {
               />
             </div>
 
-            {/* Created At */}
+            {/* Full Name */}
             <div className="flex flex-col">
               <label htmlFor="FullName" className="text-gray-700 mb-1 text-sm">
                 Full Name
@@ -312,40 +346,89 @@ const StudentSearch = () => {
             </div>
 
             {/* Buttons */}
-            <div className="col-span-2 md:col-span-4 flex justify-end gap-3 mt-2">
-              <select
-                value={selectedTable}
-                defaultValue={""}
-                onChange={(e) => setSelectedTable(e.target.value)}
-                className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-              >
-                <option value="" disabled>
-                  Select Table
-                </option>
-                {alltableOptions}
-              </select>
-              <button
-                type="submit"
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow transition"
-              >
-                <FaSearch className="text-white text-lg" />
-                Search
-              </button>
+            <div className="col-span-2 md:col-span-6 flex flex-row items-center justify-between mt-4">
+              {/* ✅ Center text (only visible after search) */}
+              <div className="flex-1 flex justify-center ml-20">
+                {hasSearched && (
+                  <div className="text-gray-700 text-sm font-medium">
+                    Found {searchResults.length} matching record
+                    {searchResults.length !== 1 ? "s" : ""}.
+                  </div>
+                )}
+              </div>
+
+              {/* ✅ Action row (right-aligned) */}
+              <div className="flex items-center justify-end gap-3">
+                <select
+                  value={selectedTable}
+                  defaultValue=""
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300 rounded-md"
+                  disabled={isLoading}
+                >
+                  <option value="" disabled>
+                    Select Table
+                  </option>
+                  {alltableOptions}
+                </select>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-lg shadow transition text-white ${
+                    isLoading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                      </svg>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <FaSearch className="text-white text-lg" />
+                      Search
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
 
           {/* Table */}
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg max-h-[50vh]">
-            <table className="min-w-full table-auto">
-              <thead className="bg-gray-200">
+          <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] mt-2">
+            <table className="min-w-full table-auto border-collapse">
+              <thead className="bg-gray-200 sticky top-0 z-10">
                 <tr>
-                  {headers.map((item, idx) => {
-                    return (
-                      <th className="px-4 py-2 text-left" key={idx}>
-                        {item}
-                      </th>
-                    );
-                  })}
+                  {headers.map((item, idx) => (
+                    <th
+                      className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
+                      key={idx}
+                    >
+                      {item}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>{TableData}</tbody>
@@ -353,6 +436,7 @@ const StudentSearch = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };
