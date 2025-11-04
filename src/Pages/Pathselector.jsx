@@ -45,7 +45,7 @@ const Pathselector = () => {
   const [email, setEmail] = useState(null);
   const [userName, setUserName] = useState(null);
   const [allTableOptions, setAllTableOptions] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const emailRef = useRef();
   const passwordRef = useRef();
   const userNameRef = useRef();
@@ -85,7 +85,7 @@ const Pathselector = () => {
   }, []);
   useEffect(() => {
     if (currentUserDetail) {
-      setProfileModal(true);
+      // setProfileModal(true);
       console.log(emailRef);
     }
   }, [currentUserDetail]);
@@ -186,10 +186,7 @@ const Pathselector = () => {
       toast.warn("Table Name cannot be empty");
       return;
     }
-    if (!scannerPath.includes(":")) {
-      toast.warn("Invalid path! Please include ':' in the path.");
-      return;
-    }
+   
     const obj = {
       path: scannerPath,
       scanner_id: scannerName,
@@ -240,7 +237,14 @@ const Pathselector = () => {
       toast.error("An error occurred while updating the path status");
     }
   };
-
+  const onButtonClick = async (user) => {
+    setLoading(true);
+    try {
+      await handleButtonAction(user);
+    } finally {
+      setLoading(false);
+    }
+  };
   const AllUsers = users.map((user, index) => (
     <tr
       key={index}
@@ -268,17 +272,41 @@ const Pathselector = () => {
       {/* ✅ Button Column */}
       <td className="px-4 py-2">
         <button
-          className={`${
+          className={`flex items-center justify-center gap-2 ${
             user.active
-              ? "bg-red-500 hover:bg-red-600" // For active users → Deactivate button
-              : "bg-green-500 hover:bg-green-600" // For inactive users → Activate button
-          } text-white px-3 py-1 rounded`}
-          onClick={(e) => {
-            e.stopPropagation(); // ✅ Prevent triggering row click
-            handleButtonAction(user);
-          }}
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-green-500 hover:bg-green-600"
+          } text-white px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed`}
+          onClick={() => onButtonClick(user)}
+          disabled={loading}
         >
-          {user.active ? "Finish" : "Activate"}
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              {user.active ? "Finishing..." : "Activating..."}
+            </>
+          ) : (
+            <>{user.active ? "Finish" : "Activate"}</>
+          )}
         </button>
       </td>
     </tr>
