@@ -3,7 +3,7 @@ import Sidebar from "../component/sidebar";
 import { MdAnalytics } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import { getAnalytics } from "../helper/Urlhelper";
-
+import { format } from "date-fns";
 const Analytics = () => {
   const [data, setData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -22,7 +22,12 @@ const Analytics = () => {
     const fetchData = async () => {
       try {
         setLoading(true); // start loader
-        const res = await getAnalytics(selectedDate);
+
+        // ✅ Format date using date-fns
+        const formattedDate = format(new Date(selectedDate), "yyyy-MM-dd");
+
+        const res = await getAnalytics(formattedDate);
+
         if (res?.data?.results) {
           setData(res.data.results);
         } else {
@@ -35,7 +40,9 @@ const Analytics = () => {
       }
     };
 
-    fetchData();
+    if (selectedDate) {
+      fetchData();
+    }
   }, [selectedDate]);
   // Skeleton loader rows (optional shimmer effect)
   const SkeletonLoader = () => (
