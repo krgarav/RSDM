@@ -103,7 +103,7 @@ const Analytics = () => {
 
         <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] mt-2">
           <table className="min-w-full table-auto border-collapse">
-            <thead className="bg-gray-200 sticky top-0 z-10">
+            <thead className="bg-gray-200 sticky top-0 z-1">
               <tr>
                 {headers.map((header, idx) => (
                   <th
