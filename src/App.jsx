@@ -18,6 +18,7 @@ import { savedPathFetch } from "./helper/Urlhelper";
 import ManageTable from "./Pages/ManageTable";
 import StudentSearch from "./Pages/StudentSearch";
 import UserLog from "./Pages/UserLog";
+import Analytics from "./Pages/Analytics";
 
 const useTokenRedirect = () => {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ function App() {
         <Route path="/admin/pathmanagement" element={<Pathselector />} />
         <Route path="/admin/entryfinder" element={<Entryfinder />} />
         <Route path="/admin/userlog" element={<UserLog />} />
-        
+        <Route path="/admin/analytics" element={<Analytics />} />
         {/* Catch-all route for invalid paths */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

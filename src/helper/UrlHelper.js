@@ -615,3 +615,25 @@ export const getUserLogsInfo = async (startTime, endTime) => {
     throw error;
   }
 };
+
+export const getAnalytics = async (date) => {
+  const token = localStorage.getItem("upsctoken");
+
+  try {
+    const response = await axios.get(
+      `${URL}/analytics/scanner_summary/?analytics_date=${date}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Added Bearer token format
+        },
+      }
+    );
+
+    // Return both the data and headers in an object
+    return response;
+  } catch (error) {
+    console.error(error);
+    // Return both error data and error headers, if available
+    throw error;
+  }
+};
