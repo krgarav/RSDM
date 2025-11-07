@@ -15,7 +15,7 @@ const Analytics = () => {
     "Avg Scanned Sheets",
     "Total Scanning Time",
     "Total Logged in Time",
-    "Ideal Time",
+    "Idle Time",
   ];
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const Analytics = () => {
   return (
     <>
       <Sidebar />
-      <div className="p-6 sm:ml-64 mt-12">
+      <div className="p-6 sm:ml-64 mt-4">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-bold text-gray-800 flex items-center gap-2">
             <MdAnalytics className="text-blue-600" /> Analytics
@@ -101,7 +101,7 @@ const Analytics = () => {
           />
         </div>
 
-        <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] mt-2">
+        <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[76vh] ">
           <table className="min-w-full table-auto border-collapse">
             <thead className="bg-gray-200 sticky top-0 z-1">
               <tr>
