@@ -46,6 +46,7 @@ const Pathselector = () => {
   const [userName, setUserName] = useState(null);
   const [allTableOptions, setAllTableOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingIndex, setLoadingIndex] = useState(null);
   const emailRef = useRef();
   const passwordRef = useRef();
   const userNameRef = useRef();
@@ -186,7 +187,7 @@ const Pathselector = () => {
       toast.warn("Table Name cannot be empty");
       return;
     }
-   
+
     const obj = {
       path: scannerPath,
       scanner_id: scannerName,
@@ -237,26 +238,23 @@ const Pathselector = () => {
       toast.error("An error occurred while updating the path status");
     }
   };
-  const onButtonClick = async (user) => {
-    setLoading(true);
+  const onButtonClick = async (user, index) => {
+    setLoadingIndex(index);
     try {
       await handleButtonAction(user);
     } finally {
-      setLoading(false);
+      setLoadingIndex(null);
     }
   };
   const AllUsers = users.map((user, index) => (
     <tr
       key={index}
       className="border-b hover:bg-gray-100 cursor-pointer"
-      onClick={() => {
-        handleUserModal(user);
-      }}
+      onClick={() => handleUserModal(user)}
     >
       <td className="px-4 py-2">{index + 1}</td>
       <td className="px-4 py-2">{user.scanner_id}</td>
       <td className="px-4 py-2">{user.path}</td>
-      {/* <td className="px-4 py-2">{user.path}</td> */}
       <td className="px-4 py-2">
         <span
           className={`px-3 py-1 text-sm font-semibold rounded-full ${
@@ -269,18 +267,19 @@ const Pathselector = () => {
         </span>
       </td>
       <td className="px-4 py-2">{user.table_name}</td>
+
       {/* ✅ Button Column */}
-      <td className="px-4 py-2">
+      <td className="px-4 py-2 w-40">
         <button
           className={`flex items-center justify-center gap-2 ${
             user.active
               ? "bg-red-500 hover:bg-red-600"
               : "bg-green-500 hover:bg-green-600"
           } text-white px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed`}
-          onClick={() => onButtonClick(user)}
-          disabled={loading}
+          onClick={() => onButtonClick(user, index)}
+          disabled={loadingIndex === index}
         >
-          {loading ? (
+          {loadingIndex === index ? (
             <>
               <svg
                 className="animate-spin h-4 w-4 text-white"
