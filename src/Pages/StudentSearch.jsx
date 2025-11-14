@@ -496,7 +496,7 @@ const StudentSearch = () => {
           </form>
 
           {/* Table */}
-          <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] mt-2">
+          {/* <div className="overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] mt-2">
             <table className="min-w-full table-auto border-collapse">
               <thead className="bg-gray-200 sticky top-0 z-10">
                 <tr>
@@ -512,16 +512,71 @@ const StudentSearch = () => {
               </thead>
               <tbody>{TableData}</tbody>
             </table>
+          </div> */}
+          <div className="flex gap-4 mt-4">
+            {/* LEFT SIDE — Table */}
+            <div
+              className={`overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] transition-all duration-300
+    ${base64String ? "flex-1" : "w-full"}`}
+            >
+              <table className="min-w-full table-auto border-collapse">
+                <thead className="bg-gray-200 sticky top-0 z-10">
+                  <tr>
+                    {headers.map((item, idx) => (
+                      <th
+                        className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
+                        key={idx}
+                      >
+                        {item}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>{TableData}</tbody>
+              </table>
+            </div>
+
+            {/* RIGHT SIDE — Image Viewer (hide container when closed) */}
+            {base64String && (
+              <div className="flex justify-end relative w-[650px]">
+                <div className="relative">
+                  {/* Close button */}
+                  <button
+                    onClick={() => setBase64String(null)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-600 z-20"
+                  >
+                    ✕
+                  </button>
+
+                  <FullScreenViewer
+                    img={`data:image/png;base64,${base64String}`}
+                    width="640px"
+                    snapView={true}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      {base64String && (
-        <FullScreenViewer
-          img={`data:image/png;base64,${base64String}`}
-          width="640px"
-          snapView={true}
-        />
-      )}
+      {/* {base64String && (
+        <div className="relative flex justify-end">
+       
+          <button
+            onClick={() => setBase64String(null)}
+            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-600"
+          >
+            ✕
+          </button>
+
+          <FullScreenViewer
+            img={`data:image/png;base64,${base64String}`}
+            width="640px"
+            snapView={true}
+          />
+        </div>
+      )} */}
+
       <ToastContainer />
     </>
   );
