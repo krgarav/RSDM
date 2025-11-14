@@ -10,10 +10,33 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "date-fns";
 import { FullScreenViewer } from "react-iv-viewer";
+
+const subjectCodeMappedWithQuestion = {
+  601: 30,
+  602: 30,
+  603: 30,
+  604: 50,
+  605: 50,
+  606: 30,
+  "901/1": 50,
+  "902/1": 50,
+  903: 20,
+  "904/1": 60,
+  "905/1": 30,
+  "906/1": 30,
+  907: 20,
+  908: 20,
+  909: 20,
+  910: 20,
+  "911/2": 40,
+  "912/1": 30,
+};
+
 const StudentSearch = () => {
   // ✅ Define all form states
   const [formData, setFormData] = useState({
     Subject_Code: "",
+    Questions: "",
     LearningArea: "",
     OMR_SHEET_NUMBER: "",
     AssessmentNumber: "",
@@ -49,14 +72,27 @@ const StudentSearch = () => {
   // ✅ Handle input change
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    setFormData((prev) => {
+      const updated = { ...prev, [id]: value };
+
+      // If Subject_Code changes, update Questions too
+      if (id === "Subject_Code") {
+        updated.Questions = subjectCodeMappedWithQuestion[value] || "";
+      }
+
+      return updated;
+    });
   };
 
   // ✅ Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedTable) {
-      toast.warn("Please select a table");
+    console.log(formData);
+    const { Subject_Code } = formData;
+    // return;
+    if (!Subject_Code) {
+      toast.warn("Please select a Subject Code");
       return;
     }
     setIsLoading(true);
@@ -185,13 +221,37 @@ const StudentSearch = () => {
               >
                 Subject Code
               </label>
-              <input
-                type="text"
+
+              <select
                 id="Subject_Code"
                 value={formData.Subject_Code}
                 onChange={handleChange}
                 className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="" disabled>
+                  Select Subject Code
+                </option>
+
+                <option value="901/1">901/1</option>
+                <option value="902/1">902/1</option>
+                <option value="903">903</option>
+                <option value="904/1">904/1</option>
+                <option value="905/1">905/1</option>
+                <option value="906/1">906/1</option>
+                <option value="907">907</option>
+                <option value="908">908</option>
+                <option value="909">909</option>
+                <option value="910">910</option>
+                <option value="911/2">911/2</option>
+                <option value="912/1">912/1</option>
+
+                <option value="601">601</option>
+                <option value="602">602</option>
+                <option value="603">603</option>
+                <option value="604">604</option>
+                <option value="605">605</option>
+                <option value="606">606</option>
+              </select>
             </div>
 
             {/* Learning Area */}
@@ -378,7 +438,7 @@ const StudentSearch = () => {
 
               {/* ✅ Action row (right-aligned) */}
               <div className="flex items-center justify-end gap-3">
-                <select
+                {/* <select
                   value={selectedTable}
                   defaultValue=""
                   onChange={(e) => setSelectedTable(e.target.value)}
@@ -389,7 +449,7 @@ const StudentSearch = () => {
                     Select Table
                   </option>
                   {alltableOptions}
-                </select>
+                </select> */}
 
                 <button
                   type="submit"
