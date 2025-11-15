@@ -10,6 +10,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "date-fns";
 import { FullScreenViewer } from "react-iv-viewer";
+import Pagination from "../component/Pagination";
 
 const subjectCodeMappedWithQuestion = {
   601: 30,
@@ -56,6 +57,10 @@ const StudentSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [base64String, setBase64String] = useState(null);
+  const [pageSize, setPageSize] = useState(100);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(6 / pageSize);
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -84,11 +89,7 @@ const StudentSearch = () => {
       return updated;
     });
   };
-
-  // ✅ Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(formData);
+  const fetchData = async () => {
     const { Subject_Code } = formData;
     // return;
     if (!Subject_Code) {
@@ -105,7 +106,90 @@ const StudentSearch = () => {
 
     const obj = {
       columns: filteredColumns,
-      table: selectedTable,
+      table: "assessmentresults",
+    };
+
+    let loadingToast;
+
+    try {
+      // ✅ Show loading toast
+      loadingToast = toast.loading("Searching records...");
+
+      // ✅ Call the API
+      const response = await searchStudentRecord(obj,currentPage,pageSize);
+      const results = response?.results || [];
+
+      // ✅ Handle "no records found"
+      if (results.length === 0) {
+        toast.update(loadingToast, {
+          render: "No records found.",
+          type: "info",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        setSearchResults([]);
+        setHeaders([]);
+        return;
+      }
+
+      // ✅ Success case
+      toast.update(loadingToast, {
+        render: `Found ${results.length} matching record(s)`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+
+      setHeaders(Object.keys(results[0]));
+      setSearchResults(results);
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.data || error.message);
+
+      // ✅ Update the *same* loading toast to show the error
+      if (loadingToast) {
+        toast.update(loadingToast, {
+          render:
+            error.response?.data?.detail ||
+            "Something went wrong while searching.",
+          type: "error",
+          isLoading: false,
+          autoClose: 4000,
+        });
+      } else {
+        // Fallback — in case loading toast didn't exist for some reason
+        toast.error(
+          error.response?.data?.detail ||
+            "Something went wrong while searching."
+        );
+      }
+      setSearchResults([]);
+      setHeaders([]);
+    } finally {
+      // ✅ Always re-enable the button
+      setIsLoading(false);
+    }
+  };
+  // ✅ Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const { Subject_Code } = formData;
+    // return;
+    if (!Subject_Code) {
+      toast.warn("Please select a Subject Code");
+      return;
+    }
+    setIsLoading(true);
+
+    setHasSearched(true);
+    // ✅ Filter out empty column values
+    const filteredColumns = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== "")
+    );
+
+    const obj = {
+      columns: filteredColumns,
+      table: "assessmentresults",
     };
 
     let loadingToast;
@@ -116,6 +200,8 @@ const StudentSearch = () => {
 
       // ✅ Call the API
       const response = await searchStudentRecord(obj);
+      // total_pages
+      // setT
       const results = response?.results || [];
 
       // ✅ Handle "no records found"
@@ -516,24 +602,43 @@ const StudentSearch = () => {
           <div className="flex gap-4 mt-4">
             {/* LEFT SIDE — Table */}
             <div
-              className={`overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg max-h-[50vh] transition-all duration-300
-    ${base64String ? "flex-1" : "w-full"}`}
+              className={`bg-white shadow-md rounded-lg transition-all duration-300
+      ${base64String ? "flex-1" : "w-full"}
+      flex flex-col`} // ⬅ make container a flex column
             >
-              <table className="min-w-full table-auto border-collapse">
-                <thead className="bg-gray-200 sticky top-0 z-10">
-                  <tr>
-                    {headers.map((item, idx) => (
-                      <th
-                        className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
-                        key={idx}
-                      >
-                        {item}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>{TableData}</tbody>
-              </table>
+              {/* Scrollable table */}
+              <div className="overflow-x-auto overflow-y-auto max-h-[50vh] flex-1">
+                <table className="min-w-full table-auto border-collapse">
+                  <thead className="bg-gray-200 sticky top-0 z-10">
+                    <tr>
+                      {headers.map((item, idx) => (
+                        <th
+                          className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
+                          key={idx}
+                        >
+                          {item}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>{TableData}</tbody>
+                </table>
+              </div>
+
+              {/* Pagination ALWAYS stays at bottom */}
+              <div className="border-t bg-gray-50">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setCurrentPage(1); // reset on size change
+                    fetchData();
+                  }}
+                />
+              </div>
             </div>
 
             {/* RIGHT SIDE — Image Viewer (hide container when closed) */}
