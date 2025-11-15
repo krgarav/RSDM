@@ -630,19 +630,22 @@ const StudentSearch = () => {
               </div>
 
               {/* Pagination ALWAYS stays at bottom */}
-              <div className="border-t bg-gray-50">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
-                  onPageChange={setCurrentPage}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    setCurrentPage(1); // reset on size change
-                    fetchData();
-                  }}
-                />
-              </div>
+
+              {searchResults.length !== 0 && (
+                <div className="border-t bg-gray-50">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      setCurrentPage(1); // reset on size change
+                      fetchData();
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* RIGHT SIDE — Image Viewer (hide container when closed) */}
