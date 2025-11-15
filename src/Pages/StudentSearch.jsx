@@ -93,7 +93,7 @@ const StudentSearch = () => {
       return updated;
     });
   };
-  const fetchData = async () => {
+  const fetchData = async (size=1000) => {
     const { Subject_Code } = formData;
     // return;
     if (!Subject_Code) {
@@ -120,7 +120,7 @@ const StudentSearch = () => {
       loadingToast = toast.loading("Searching records...");
 
       // ✅ Call the API
-      const response = await searchStudentRecord(obj, currentPage, pageSize);
+      const response = await searchStudentRecord(obj, currentPage, size);
       const results = response?.results || [];
 
       // ✅ Handle "no records found"
@@ -641,7 +641,9 @@ const StudentSearch = () => {
                     onPageSizeChange={(size) => {
                       setPageSize(size);
                       setCurrentPage(1); // reset on size change
-                      fetchData();
+                      setTimeout(() => {
+                        fetchData(size);
+                      }, 100);
                     }}
                   />
                 </div>
