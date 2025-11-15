@@ -71,6 +71,10 @@ const StudentSearch = () => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
   useEffect(() => {
     fetchUsers();
   }, []);

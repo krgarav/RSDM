@@ -33,7 +33,7 @@ const Pagination = ({
       </div>
 
       {/* Pagination buttons */}
-      {/* <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1">
         <button
           className="px-3 py-1 border rounded disabled:opacity-40"
           disabled={currentPage === 1}
@@ -63,7 +63,7 @@ const Pagination = ({
         >
           Next
         </button>
-      </div> */}
+      </div>
 
       {/* Page info */}
       <div className="text-sm">
