@@ -409,12 +409,12 @@ export const searchRecord = async (tableName, queryDetail, col_name) => {
   }
 };
 
-export const searchStudentRecord = async (obj) => {
+export const searchStudentRecord = async (obj,pageNo=1,pageSize=1000) => {
   const token = localStorage.getItem("upsctoken");
 
   try {
     const response = await axios.post(
-      `${URL}/tables/searchstudentwiserecord`, // ✅ POST instead of GET
+      `${URL}/tables/searchstudentwiserecord?page=${pageNo}&page_size=${pageSize}`, // ✅ POST instead of GET
       obj, // ✅ send your JSON body here
       {
         headers: {

@@ -57,10 +57,10 @@ const StudentSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [base64String, setBase64String] = useState(null);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(1000);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.ceil(6 / pageSize);
+  const [totalPages, setTotalPages] = useState(0);
+  // const totalPages = Math.ceil(6 / pageSize);
   const fetchUsers = async () => {
     try {
       const res = await fetchTables();
@@ -116,7 +116,7 @@ const StudentSearch = () => {
       loadingToast = toast.loading("Searching records...");
 
       // ✅ Call the API
-      const response = await searchStudentRecord(obj,currentPage,pageSize);
+      const response = await searchStudentRecord(obj, currentPage, pageSize);
       const results = response?.results || [];
 
       // ✅ Handle "no records found"
@@ -201,7 +201,7 @@ const StudentSearch = () => {
       // ✅ Call the API
       const response = await searchStudentRecord(obj);
       // total_pages
-      // setT
+      setTotalPages(response?.total_pages || 0);
       const results = response?.results || [];
 
       // ✅ Handle "no records found"

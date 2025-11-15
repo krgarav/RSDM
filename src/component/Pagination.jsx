@@ -7,7 +7,7 @@ const Pagination = ({
   onPageChange,
   onPageSizeChange,
 }) => {
-  const pageSizes = [100, 200, 300, 400, 500];
+  const pageSizes = [1000, 2000, 3000, 4000, 5000];
 
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
@@ -33,7 +33,7 @@ const Pagination = ({
       </div>
 
       {/* Pagination buttons */}
-      <div className="flex items-center gap-1">
+      {/* <div className="flex items-center gap-1">
         <button
           className="px-3 py-1 border rounded disabled:opacity-40"
           disabled={currentPage === 1}
@@ -63,7 +63,7 @@ const Pagination = ({
         >
           Next
         </button>
-      </div>
+      </div> */}
 
       {/* Page info */}
       <div className="text-sm">
