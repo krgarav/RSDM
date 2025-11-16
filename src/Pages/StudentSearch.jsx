@@ -75,7 +75,9 @@ const StudentSearch = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    if (formData.Subject_Code) {
+      fetchData(undefined,currentPage);
+    }
   }, [currentPage]);
   useEffect(() => {
     fetchUsers();
@@ -95,7 +97,7 @@ const StudentSearch = () => {
       return updated;
     });
   };
-  const fetchData = async (size = 1000) => {
+  const fetchData = async (size = 1000,pageno=1) => {
     const { Subject_Code } = formData;
     // return;
     if (!Subject_Code) {
@@ -122,9 +124,9 @@ const StudentSearch = () => {
       loadingToast = toast.loading("Searching records...");
 
       // ✅ Call the API
-      const response = await searchStudentRecord(obj, currentPage, size);
+      const response = await searchStudentRecord(obj, pageno, size);
       const results = response?.results || [];
- setTotalPages(response?.total_pages || 0);
+      setTotalPages(response?.total_pages || 0);
       setTotalRecords(response?.total_records || 0);
       // ✅ Handle "no records found"
       if (results.length === 0) {
@@ -169,6 +171,7 @@ const StudentSearch = () => {
             "Something went wrong while searching."
         );
       }
+       setTotalRecords(0)
       setSearchResults([]);
       setHeaders([]);
     } finally {
@@ -248,6 +251,7 @@ const StudentSearch = () => {
           isLoading: false,
           autoClose: 4000,
         });
+       
       } else {
         // Fallback — in case loading toast didn't exist for some reason
         toast.error(
@@ -255,6 +259,7 @@ const StudentSearch = () => {
             "Something went wrong while searching."
         );
       }
+       setTotalRecords(0)
       setSearchResults([]);
       setHeaders([]);
     } finally {
@@ -591,72 +596,69 @@ const StudentSearch = () => {
           </form>
 
           <div className="flex flex-col lg:flex-row gap-4 mt-4 w-full">
-
-  {/* LEFT SIDE — TABLE */}
-  <div
-    className={`bg-white shadow-md rounded-lg transition-all duration-300
+            {/* LEFT SIDE — TABLE */}
+            <div
+              className={`bg-white shadow-md rounded-lg transition-all duration-300
       flex flex-col min-w-0
       ${base64String ? "lg:flex-1" : "w-full"}`} // Full width on mobile
-  >
-    {/* Scrollable table */}
-    <div className="overflow-x-auto overflow-y-auto max-h-[58vh] flex-1">
-      <table className="min-w-full table-auto border-collapse">
-        <thead className="bg-gray-200 sticky top-0 z-10">
-          <tr>
-            {headers.map((item, idx) => (
-              <th
-                className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
-                key={idx}
-              >
-                {item}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>{TableData}</tbody>
-      </table>
-    </div>
+            >
+              {/* Scrollable table */}
+              <div className="overflow-x-auto overflow-y-auto max-h-[58vh] flex-1">
+                <table className="min-w-full table-auto border-collapse">
+                  <thead className="bg-gray-200 sticky top-0 z-10">
+                    <tr>
+                      {headers.map((item, idx) => (
+                        <th
+                          className="px-4 py-2 text-left text-gray-700 font-semibold border-b"
+                          key={idx}
+                        >
+                          {item}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>{TableData}</tbody>
+                </table>
+              </div>
 
-    {/* Pagination */}
-    {searchResults.length !== 0 && (
-      <div className="border-t bg-gray-50">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-            setTimeout(() => fetchData(size), 100);
-          }}
-        />
-      </div>
-    )}
-  </div>
+              {/* Pagination */}
+              {searchResults.length !== 0 && (
+                <div className="border-t bg-gray-50">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      setCurrentPage(1);
+                      setTimeout(() => fetchData(size), 100);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
-  {/* RIGHT SIDE — IMAGE VIEWER */}
-  {base64String && (
-    <div className="relative w-full lg:w-[650px] flex-shrink-0">
-
-      {/* Close button */}
-      <button
-        onClick={() => setBase64String(null)}
-        className="absolute top-2 right-2 bg-red-500 text-white rounded-full 
+            {/* RIGHT SIDE — IMAGE VIEWER */}
+            {base64String && (
+              <div className="relative w-full lg:w-[650px] flex-shrink-0">
+                {/* Close button */}
+                <button
+                  onClick={() => setBase64String(null)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full 
                    w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-600 z-20"
-      >
-        ✕
-      </button>
+                >
+                  ✕
+                </button>
 
-      <FullScreenViewer
-        img={`data:image/png;base64,${base64String}`}
-        width="100%"
-        snapView={true}
-      />
-    </div>
-  )}
-</div>
-
+                <FullScreenViewer
+                  img={`data:image/png;base64,${base64String}`}
+                  width="100%"
+                  snapView={true}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {/* {base64String && (
